@@ -4,7 +4,7 @@
 
 int BakaMain(int argc, char *argv[])
 {
-    bakalog("hey there from sample main");
+    bakalog("hey from sample main");
 
     return 0;
 }
