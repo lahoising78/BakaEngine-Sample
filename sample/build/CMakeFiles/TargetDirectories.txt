@@ -1,0 +1,6 @@
+/home/luis/Documents/baka/sample/build/CMakeFiles/rebuild_cache.dir
+/home/luis/Documents/baka/sample/build/CMakeFiles/app.dir
+/home/luis/Documents/baka/sample/build/CMakeFiles/edit_cache.dir
+/home/luis/Documents/baka/sample/build/baka_engine/CMakeFiles/rebuild_cache.dir
+/home/luis/Documents/baka/sample/build/baka_engine/CMakeFiles/baka_engine.dir
+/home/luis/Documents/baka/sample/build/baka_engine/CMakeFiles/edit_cache.dir

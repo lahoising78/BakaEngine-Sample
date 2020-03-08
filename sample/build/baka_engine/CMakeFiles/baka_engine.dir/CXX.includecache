@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/luis/Documents/baka/engine/include/Baka.h
+
+/home/luis/Documents/baka/engine/src/baka_main.cpp
+Baka.h
+/home/luis/Documents/baka/engine/src/Baka.h
+

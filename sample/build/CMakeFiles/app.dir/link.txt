@@ -1,0 +1,1 @@
+/usr/bin/c++  -Wall -Wpedantic -Werror   CMakeFiles/app.dir/src/main.cpp.o  -o app baka_engine/libbaka_engine.a 
