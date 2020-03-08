@@ -7,12 +7,18 @@
 int main(int argc, char *argv[])
 {
     bool running = false;
+    // bool validation = true;
+    bool validation = false;
     bakalog("--==== Start of application ====--");
 
-    running = Baka::Graphics::Init("Baka Engine", 1280, 720);
-    Baka::Input::Init();
-    
-    BakaMain(argc, argv);
+    running = Baka::Graphics::Init("Baka Engine", 1280, 720, validation);
+
+    if(running)
+    {
+        Baka::Input::Init();
+        
+        BakaMain(argc, argv);
+    }
 
     bakalog("--==== Update of application ====--");
     while(running)

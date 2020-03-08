@@ -1,0 +1,39 @@
+#ifndef _BAKA_VK_EXTENSIONS_
+#define _BAKA_VK_EXTENSIONS_
+
+#include <vulkan/vulkan.h>
+#include <vector>
+
+namespace Baka
+{
+    class VulkanExtensions
+    {
+    public:
+        virtual void Init() {};
+        const char **GetExtensionNames();
+        uint32_t GetExtensionCount();
+        bool EnableExtension(const char *name);
+    protected:
+        std::vector<VkExtensionProperties> extensions;
+        std::vector<const char *> extension_names;
+    private:
+        bool ExtensionAvailable(const char *name); 
+    };
+
+    class VulkanInstanceExtensions : public VulkanExtensions
+    {
+    public:
+        void Init() override;
+    };
+
+    class VulkanDeviceExtensions : public VulkanExtensions
+    {
+    public:
+        void Init() override;
+    };
+
+    static VulkanInstanceExtensions instance_extensions;
+    static VulkanDeviceExtensions device_extensions;
+}
+
+#endif
