@@ -6,5 +6,5 @@ CXX_FLAGS = -Wall -Wpedantic -Werror
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/luis/Documents/baka/engine/include 
+CXX_INCLUDES = -I/usr/local/include/SDL2 -I/home/luis/Documents/baka/engine/include 
 

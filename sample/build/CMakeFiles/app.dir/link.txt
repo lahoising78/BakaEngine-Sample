@@ -1,1 +1,1 @@
-/usr/bin/c++  -Wall -Wpedantic -Werror   CMakeFiles/app.dir/src/main.cpp.o  -o app baka_engine/libbaka_engine.a 
+/usr/bin/c++  -Wall -Wpedantic -Werror   CMakeFiles/app.dir/src/main.cpp.o  -o app baka_engine/libbaka_engine.a -L/usr/local/lib -Wl,-rpath,/usr/local/lib -Wl,--enable-new-dtags -lSDL2 
