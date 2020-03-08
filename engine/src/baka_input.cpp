@@ -5,6 +5,7 @@ namespace Baka
 {
     SDL_KeyboardEvent Input::keyboard[ BAKA_NUM_KEYS ];
     SDL_QuitEvent Input::quitEvent;
+    SDL_TextInputEvent Input::lastKey;
 
     void Input::Init()
     {
@@ -16,6 +17,7 @@ namespace Baka
         SDL_Event e = {0};
         memset(keyboard, 0, sizeof(SDL_KeyboardEvent) * BAKA_NUM_KEYS);
         quitEvent = {0};
+        lastKey = {0};
 
         while(SDL_PollEvent(&e))
         {
@@ -29,8 +31,13 @@ namespace Baka
                 }
                 break;
 
+            case SDL_TEXTINPUT:
+                lastKey = e.text;
+                break;
+
             case SDL_QUIT:
                 quitEvent = e.quit;
+                break;
             
             default:
                 break;
@@ -42,6 +49,11 @@ namespace Baka
     {
         if(key >= BAKA_NUM_KEYS) return false;
         return keyboard[key].state == SDL_PRESSED;
+    }
+
+    const char *Input::AnyKey()
+    {
+        return lastKey.text;
     }
 
     bool Input::QuitRequested()

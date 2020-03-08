@@ -14,11 +14,13 @@ namespace Baka
         static void Update();
 
         static bool KeyPressed(int key);
+        static const char *AnyKey();
         static bool QuitRequested();
 
     private:
         static SDL_KeyboardEvent keyboard[ BAKA_NUM_KEYS ];
         static SDL_QuitEvent quitEvent;
+        static SDL_TextInputEvent lastKey;
     };
 }
 
