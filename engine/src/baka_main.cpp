@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     bool running = false;
     bakalog("--==== Start of application ====--");
 
-    running = Baka::Graphics::Init();
+    running = Baka::Graphics::Init("Baka Engine", 1280, 720);
     Baka::Input::Init();
     
     BakaMain(argc, argv);

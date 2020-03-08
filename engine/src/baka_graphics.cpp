@@ -5,7 +5,7 @@ namespace Baka
 {
     SDL_Window *Graphics::window = nullptr;
 
-    bool Graphics::Init()
+    bool Graphics::Init( const char *windowName, int width, int height )
     {
         if(SDL_Init( SDL_INIT_EVERYTHING ) != 0)
         {
@@ -14,7 +14,7 @@ namespace Baka
         }
         atexit(SDL_Quit);
 
-        Graphics::Setup();
+        Graphics::Setup(windowName, width, height);
 
         atexit(Graphics::Close);
 
@@ -22,15 +22,14 @@ namespace Baka
         return true;
     }
 
-    void Graphics::Setup()
+    void Graphics::Setup( const char *windowName, int width, int height )
     {
         uint32_t windowFlags = SDL_WINDOW_VULKAN;
 
         window = SDL_CreateWindow(
-            "Baka Engine",
-            SDL_WINDOWPOS_CENTERED,
-            SDL_WINDOWPOS_CENTERED,
-            1280, 720,
+            windowName,
+            0, 0,
+            width, height,
             windowFlags
         );
     }

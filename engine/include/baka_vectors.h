@@ -26,7 +26,8 @@ void vec4_normalize(Vec4 &v);
 
 Vec3 vec3_cross_product(const Vec3 a, const Vec3 b);
 
-#define vec3_dot_product(a, b) (a.x*b.x + a.y*b.y + a.z*b.z)
+#define vec2_dot_product(a, b) (a.x*b.x + a.y*b.y)
+#define vec3_dot_product(a, b) ( vec2_dot_product(a,b) + a.z*b.z )
 #define vec4_dot_product(a, b) ( vec3_dot_product(a,b) + a.w*b.w )
 
 Vec2 operator+(const Vec2 &a, const Vec2 &b);

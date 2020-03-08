@@ -7,10 +7,10 @@ namespace Baka{
     class Graphics
     {
     public:
-        static bool Init();
+        static bool Init( const char *windowName, int width, int height );
 
     private:
-        static void Setup();
+        static void Setup( const char *windowName, int width, int height );
         static void Close();
 
     private:

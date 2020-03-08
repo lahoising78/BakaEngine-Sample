@@ -46,7 +46,15 @@ void vec3_normalize(Vec3 &v)
 
 void vec4_normalize(Vec4 &v)
 {
+    float m = vec4_magnitude(v);
 
+    if(m == 0.0f) return;
+
+    m = 1/m;
+    v.x *= m;
+    v.y *= m;
+    v.z *= m;
+    v.w *= m;
 }
 
 Vec3 vec3_cross_product(const Vec3 a, const Vec3 b)
