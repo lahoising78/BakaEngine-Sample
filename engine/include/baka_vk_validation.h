@@ -10,15 +10,17 @@ namespace Baka
     {
     public:
         void Init();
-        const std::vector<const char *> GetLayerNames();
+        uint32_t GetLayerCount();
+        const char **GetLayerNames();
+        void RemoveLayer(const char *name);
 
     private:
-        std::vector<VkLayerProperties> availableLayer;
+        void QueryLayerProperties();
+        std::vector<VkLayerProperties> layers;
         std::vector<const char *> layer_names;
-
     };
 
-    static VulkanValidation validation;
+    static VulkanValidation baka_validation;
 }
 
 #endif

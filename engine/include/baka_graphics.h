@@ -14,6 +14,19 @@ namespace Baka{
     private:
         static bool Setup( const char *windowName, int width, int height );
         static void Close();
+        static void SetupDebug();
+        static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+            VkDebugUtilsMessageTypeFlagsEXT messageType,
+            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+            void* pUserData);
+        static VkResult CreateDebugUtilsMessengerEXT(
+            VkInstance instance, 
+            const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
+            const VkAllocationCallbacks* pAllocator, 
+            VkDebugUtilsMessengerEXT* pDebugMessenger);
+        static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+        static void CloseDebug();
 
     private:
         static SDL_Window *window;
@@ -22,6 +35,7 @@ namespace Baka{
         static VkInstanceCreateInfo vk_instance_info;
         static VkInstance vk_instance;
         static bool validation;
+        static VkDebugUtilsMessengerEXT debug_callback;
     };
 }
 

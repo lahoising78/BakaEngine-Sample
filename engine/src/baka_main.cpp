@@ -7,8 +7,7 @@
 int main(int argc, char *argv[])
 {
     bool running = false;
-    // bool validation = true;
-    bool validation = false;
+    bool validation = true;
     bakalog("--==== Start of application ====--");
 
     running = Baka::Graphics::Init("Baka Engine", 1280, 720, validation);

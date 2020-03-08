@@ -1,6 +1,7 @@
 #include "baka_graphics.h"
 #include "baka_logger.h"
 #include "baka_vk_extensions.h"
+#include "baka_vk_validation.h"
 #include <SDL2/SDL_vulkan.h>
 
 namespace Baka
@@ -11,6 +12,7 @@ namespace Baka
     VkInstanceCreateInfo Graphics::vk_instance_info;
     VkInstance Graphics::vk_instance;
     bool Graphics::validation;
+    VkDebugUtilsMessengerEXT Graphics::debug_callback;
 
     bool Graphics::Init( const char *windowName, int width, int height, bool validation )
     {
@@ -85,7 +87,13 @@ namespace Baka
 
         if(validation)
         {
-
+            baka_validation.Init();
+            baka_validation.RemoveLayer("VK_LAYER_LUNARG_vktrace");
+            baka_validation.RemoveLayer("VK_LAYER_LUNARG_device_simulation");
+            baka_validation.RemoveLayer("VK_LAYER_LUNARG_api_dump");
+            vk_instance_info.enabledLayerCount = baka_validation.GetLayerCount();
+            vk_instance_info.ppEnabledLayerNames = baka_validation.GetLayerNames();
+            instance_extensions.EnableExtension("VK_EXT_debug_utils");
         }
         else
         {
@@ -107,17 +115,86 @@ namespace Baka
             bakalog("VkInstance created successfully");
         }
 
+        if(validation)
+        {
+            SetupDebug();
+        }
+
         return true;
     }
 
     void Graphics::Close()
     {
         bakalog("closing baka graphics");
+
+        CloseDebug();
+
         if(window)
         {
             SDL_DestroyWindow( window );
         }
-
-        vkDestroyInstance(vk_instance, nullptr);
+        
+        if(vk_instance)
+        {
+            vkDestroyInstance(vk_instance, nullptr);
+        }
     }
+    
+    /* VULKAN DEBUG */
+    void Graphics::SetupDebug()
+    {
+        VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
+
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo.pfnUserCallback = Graphics::DebugCallback;
+        createInfo.pUserData = nullptr;
+
+        CreateDebugUtilsMessengerEXT(vk_instance, &createInfo, nullptr, &debug_callback);
+    }
+
+    VKAPI_ATTR VkBool32 VKAPI_CALL Graphics::DebugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData
+    )
+    {
+        bakaerr("Vulkan Debug [%d]:%s", messageSeverity, pCallbackData->pMessage);
+        return VK_FALSE;
+    }
+
+    VkResult Graphics::CreateDebugUtilsMessengerEXT(
+        VkInstance instance, 
+        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
+        const VkAllocationCallbacks* pAllocator, 
+        VkDebugUtilsMessengerEXT* pDebugMessenger
+    )
+    {
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+        if (func != nullptr) {
+            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+        } else {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        }
+    }
+
+    void Graphics::CloseDebug()
+    {
+        if(validation)
+        {
+            DestroyDebugUtilsMessengerEXT(vk_instance, debug_callback, nullptr);
+        }
+    }
+
+    void Graphics::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
+    {
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+        if (func != nullptr) 
+        {
+            func(instance, debugMessenger, pAllocator);
+        }
+    }
+
 }
