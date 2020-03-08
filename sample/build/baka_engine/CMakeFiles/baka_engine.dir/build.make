@@ -57,9 +57,33 @@ include baka_engine/CMakeFiles/baka_engine.dir/progress.make
 # Include the compile flags for this target's objects.
 include baka_engine/CMakeFiles/baka_engine.dir/flags.make
 
+baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o: baka_engine/CMakeFiles/baka_engine.dir/flags.make
+baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o: /home/luis/Documents/baka/engine/src/baka_logger.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/luis/Documents/baka/sample/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o"
+	cd /home/luis/Documents/baka/sample/build/baka_engine && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o -c /home/luis/Documents/baka/engine/src/baka_logger.cpp
+
+baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/baka_engine.dir/src/baka_logger.cpp.i"
+	cd /home/luis/Documents/baka/sample/build/baka_engine && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/luis/Documents/baka/engine/src/baka_logger.cpp > CMakeFiles/baka_engine.dir/src/baka_logger.cpp.i
+
+baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/baka_engine.dir/src/baka_logger.cpp.s"
+	cd /home/luis/Documents/baka/sample/build/baka_engine && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/luis/Documents/baka/engine/src/baka_logger.cpp -o CMakeFiles/baka_engine.dir/src/baka_logger.cpp.s
+
+baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o.requires:
+
+.PHONY : baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o.requires
+
+baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o.provides: baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o.requires
+	$(MAKE) -f baka_engine/CMakeFiles/baka_engine.dir/build.make baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o.provides.build
+.PHONY : baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o.provides
+
+baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o.provides.build: baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o
+
+
 baka_engine/CMakeFiles/baka_engine.dir/src/baka_main.cpp.o: baka_engine/CMakeFiles/baka_engine.dir/flags.make
 baka_engine/CMakeFiles/baka_engine.dir/src/baka_main.cpp.o: /home/luis/Documents/baka/engine/src/baka_main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/luis/Documents/baka/sample/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object baka_engine/CMakeFiles/baka_engine.dir/src/baka_main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/luis/Documents/baka/sample/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object baka_engine/CMakeFiles/baka_engine.dir/src/baka_main.cpp.o"
 	cd /home/luis/Documents/baka/sample/build/baka_engine && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/baka_engine.dir/src/baka_main.cpp.o -c /home/luis/Documents/baka/engine/src/baka_main.cpp
 
 baka_engine/CMakeFiles/baka_engine.dir/src/baka_main.cpp.i: cmake_force
@@ -83,15 +107,17 @@ baka_engine/CMakeFiles/baka_engine.dir/src/baka_main.cpp.o.provides.build: baka_
 
 # Object files for target baka_engine
 baka_engine_OBJECTS = \
+"CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o" \
 "CMakeFiles/baka_engine.dir/src/baka_main.cpp.o"
 
 # External object files for target baka_engine
 baka_engine_EXTERNAL_OBJECTS =
 
+baka_engine/libbaka_engine.a: baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o
 baka_engine/libbaka_engine.a: baka_engine/CMakeFiles/baka_engine.dir/src/baka_main.cpp.o
 baka_engine/libbaka_engine.a: baka_engine/CMakeFiles/baka_engine.dir/build.make
 baka_engine/libbaka_engine.a: baka_engine/CMakeFiles/baka_engine.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/luis/Documents/baka/sample/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library libbaka_engine.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/luis/Documents/baka/sample/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library libbaka_engine.a"
 	cd /home/luis/Documents/baka/sample/build/baka_engine && $(CMAKE_COMMAND) -P CMakeFiles/baka_engine.dir/cmake_clean_target.cmake
 	cd /home/luis/Documents/baka/sample/build/baka_engine && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/baka_engine.dir/link.txt --verbose=$(VERBOSE)
 
@@ -100,6 +126,7 @@ baka_engine/CMakeFiles/baka_engine.dir/build: baka_engine/libbaka_engine.a
 
 .PHONY : baka_engine/CMakeFiles/baka_engine.dir/build
 
+baka_engine/CMakeFiles/baka_engine.dir/requires: baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o.requires
 baka_engine/CMakeFiles/baka_engine.dir/requires: baka_engine/CMakeFiles/baka_engine.dir/src/baka_main.cpp.o.requires
 
 .PHONY : baka_engine/CMakeFiles/baka_engine.dir/requires

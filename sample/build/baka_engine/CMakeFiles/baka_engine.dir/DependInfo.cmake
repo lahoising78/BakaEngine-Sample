@@ -4,6 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
+  "/home/luis/Documents/baka/engine/src/baka_logger.cpp" "/home/luis/Documents/baka/sample/build/baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o"
   "/home/luis/Documents/baka/engine/src/baka_main.cpp" "/home/luis/Documents/baka/sample/build/baka_engine/CMakeFiles/baka_engine.dir/src/baka_main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")

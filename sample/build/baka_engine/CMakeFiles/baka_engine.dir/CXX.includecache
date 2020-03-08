@@ -8,6 +8,18 @@
 
 /home/luis/Documents/baka/engine/include/Baka.h
 
+/home/luis/Documents/baka/engine/include/baka_logger.h
+
+/home/luis/Documents/baka/engine/src/baka_logger.cpp
+stdio.h
+-
+stdarg.h
+-
+string.h
+-
+baka_logger.h
+/home/luis/Documents/baka/engine/src/baka_logger.h
+
 /home/luis/Documents/baka/engine/src/baka_main.cpp
 Baka.h
 /home/luis/Documents/baka/engine/src/Baka.h

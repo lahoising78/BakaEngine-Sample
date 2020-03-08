@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o"
   "CMakeFiles/baka_engine.dir/src/baka_main.cpp.o"
   "libbaka_engine.pdb"
   "libbaka_engine.a"

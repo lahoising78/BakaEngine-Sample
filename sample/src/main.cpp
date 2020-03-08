@@ -1,9 +1,10 @@
 #include "Baka.h"
+#include "baka_logger.h"
 #include <iostream>
 
 int BakaMain(int argc, char *argv[])
 {
-    printf("Hello from sample main\n");
+    bakalog("hey there from sample main");
 
     return 0;
 }

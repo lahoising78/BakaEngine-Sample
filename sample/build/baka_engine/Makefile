@@ -125,6 +125,33 @@ baka_engine/fast:
 	cd /home/luis/Documents/baka/sample/build && $(MAKE) -f baka_engine/CMakeFiles/baka_engine.dir/build.make baka_engine/CMakeFiles/baka_engine.dir/build
 .PHONY : baka_engine/fast
 
+src/baka_logger.o: src/baka_logger.cpp.o
+
+.PHONY : src/baka_logger.o
+
+# target to build an object file
+src/baka_logger.cpp.o:
+	cd /home/luis/Documents/baka/sample/build && $(MAKE) -f baka_engine/CMakeFiles/baka_engine.dir/build.make baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o
+.PHONY : src/baka_logger.cpp.o
+
+src/baka_logger.i: src/baka_logger.cpp.i
+
+.PHONY : src/baka_logger.i
+
+# target to preprocess a source file
+src/baka_logger.cpp.i:
+	cd /home/luis/Documents/baka/sample/build && $(MAKE) -f baka_engine/CMakeFiles/baka_engine.dir/build.make baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.i
+.PHONY : src/baka_logger.cpp.i
+
+src/baka_logger.s: src/baka_logger.cpp.s
+
+.PHONY : src/baka_logger.s
+
+# target to generate assembly for a file
+src/baka_logger.cpp.s:
+	cd /home/luis/Documents/baka/sample/build && $(MAKE) -f baka_engine/CMakeFiles/baka_engine.dir/build.make baka_engine/CMakeFiles/baka_engine.dir/src/baka_logger.cpp.s
+.PHONY : src/baka_logger.cpp.s
+
 src/baka_main.o: src/baka_main.cpp.o
 
 .PHONY : src/baka_main.o
@@ -161,6 +188,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... baka_engine"
 	@echo "... edit_cache"
+	@echo "... src/baka_logger.o"
+	@echo "... src/baka_logger.i"
+	@echo "... src/baka_logger.s"
 	@echo "... src/baka_main.o"
 	@echo "... src/baka_main.i"
 	@echo "... src/baka_main.s"

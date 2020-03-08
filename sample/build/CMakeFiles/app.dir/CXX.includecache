@@ -8,9 +8,13 @@
 
 /home/luis/Documents/baka/engine/include/Baka.h
 
+/home/luis/Documents/baka/engine/include/baka_logger.h
+
 /home/luis/Documents/baka/sample/src/main.cpp
 Baka.h
 /home/luis/Documents/baka/sample/src/Baka.h
+baka_logger.h
+/home/luis/Documents/baka/sample/src/baka_logger.h
 iostream
 -
 

@@ -1,2 +1,2 @@
-/usr/bin/ar qc libbaka_engine.a  CMakeFiles/baka_engine.dir/src/baka_main.cpp.o
+/usr/bin/ar qc libbaka_engine.a  CMakeFiles/baka_engine.dir/src/baka_logger.cpp.o CMakeFiles/baka_engine.dir/src/baka_main.cpp.o
 /usr/bin/ranlib libbaka_engine.a
