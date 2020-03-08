@@ -37,6 +37,7 @@ namespace Baka
 
     void Graphics::Close()
     {
+        bakalog("closing baka graphics");
         if(window)
         {
             SDL_DestroyWindow( window );

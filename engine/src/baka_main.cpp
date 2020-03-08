@@ -7,11 +7,14 @@
 int main(int argc, char *argv[])
 {
     bool running = false;
+    bakalog("--==== Start of application ====--");
+
     running = Baka::Graphics::Init();
     Baka::Input::Init();
     
     BakaMain(argc, argv);
 
+    bakalog("--==== Update of application ====--");
     while(running)
     {
         Baka::Input::Update();
@@ -23,6 +26,8 @@ int main(int argc, char *argv[])
 
         BakaUpdate(0.0f);
     }
+
+    bakalog("--==== End of application ====--");
 
     return 0;
 }
