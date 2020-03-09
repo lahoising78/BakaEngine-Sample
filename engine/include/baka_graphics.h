@@ -10,6 +10,7 @@ namespace Baka{
     {
     public:
         static bool Init( const char *windowName, int width, int height, bool validation );
+        static VkImageView CreateImageView(VkImage image, VkFormat format);
 
     private:
         static bool Setup( const char *windowName, int width, int height );

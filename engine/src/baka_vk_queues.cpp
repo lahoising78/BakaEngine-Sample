@@ -5,8 +5,8 @@
 namespace Baka
 {
     static VulkanQueue graphics_queue;
-    // static VulkanQueue present_queue;
-    // static VulkanQueue transfer_queue;
+    static VulkanQueue present_queue;
+    static VulkanQueue transfer_queue;
 
     void VulkanQueueManager::Init(VkPhysicalDevice device, VkSurfaceKHR surface)
     {
@@ -14,8 +14,8 @@ namespace Baka
         VkBool32 supported;
 
         graphics_queue.family = -1;
-        // transfer_queue.family = -1;
-        // present_queue.family = -1;
+        transfer_queue.family = -1;
+        present_queue.family = -1;
 
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, nullptr);
         bakalog("Discovered %u queue families", queue_family_count);
@@ -38,29 +38,29 @@ namespace Baka
                 bakalog("queue %u handles graphics", i);
             }
 
-            // if( queue_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT )
-            // {
-            //     transfer_queue.family = i;
-            //     transfer_queue.priority = 1.0f;
-            //     bakalog("queue %u handles transfer", i);
-            // }
+            if( queue_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT )
+            {
+                transfer_queue.family = i;
+                transfer_queue.priority = 1.0f;
+                bakalog("queue %u handles transfer", i);
+            }
 
-            // if( supported )
-            // {
-            //     present_queue.family = i;
-            //     present_queue.priority = 1.0f;
-            //     bakalog("queue %u handles presentation");
-            // }
+            if( supported )
+            {
+                present_queue.family = i;
+                present_queue.priority = 1.0f;
+                bakalog("queue %u handles presentation", i);
+            }
         }
 
         if(graphics_queue.family != -1)
         {
             create_info.push_back(graphics_queue.GetQueueInfo());
         }
-        // if(present_queue.family != -1 && present_queue.family != graphics_queue.family)
-        // {
-        //     create_info.push_back(present_queue.GetQueueInfo());
-        // }
+        if(present_queue.family != -1 && present_queue.family != graphics_queue.family)
+        {
+            create_info.push_back(present_queue.GetQueueInfo());
+        }
     }
 
     void VulkanQueueManager::Close()
@@ -72,6 +72,33 @@ namespace Baka
     {
         if(count) *count = create_info.size();
         return create_info.data();
+    }
+
+    void VulkanQueueManager::SetupDeviceQueues(VkDevice device)
+    {
+        if (graphics_queue.family != -1)
+        {
+            vkGetDeviceQueue(device, graphics_queue.family, 0, &graphics_queue.queue);
+        }
+        if (present_queue.family != -1)
+        {
+            vkGetDeviceQueue(device, present_queue.family, 0, &present_queue.queue);
+        }
+        if (transfer_queue.family != -1)
+        {
+            vkGetDeviceQueue(device, transfer_queue.family, 0, &transfer_queue.queue);
+        }
+    }
+
+    int32_t VulkanQueueManager::GetQueueFamily( VulkanQueueType pType )
+    {
+        switch (pType)
+        {
+        case QUEUE_TYPE_GRAPHICS: return graphics_queue.family; break;
+        case QUEUE_TYPE_PRESENT: return present_queue.family; break;
+        case QUEUE_TYPE_TRANSFER: return transfer_queue.family; break;
+        default: return -1;
+        }
     }
 
     VkDeviceQueueCreateInfo VulkanQueue::GetQueueInfo()
