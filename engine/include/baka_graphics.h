@@ -27,6 +27,7 @@ namespace Baka{
             VkDebugUtilsMessengerEXT* pDebugMessenger);
         static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
         static void CloseDebug();
+        static VkDeviceCreateInfo GetDeviceCreateInfo();
 
     private:
         static SDL_Window *window;
@@ -36,6 +37,12 @@ namespace Baka{
         static VkInstance vk_instance;
         static bool validation;
         static VkDebugUtilsMessengerEXT debug_callback;
+        static std::vector<VkPhysicalDevice> devices;
+        static VkPhysicalDevice gpu;
+        static VkSurfaceKHR surface;
+        static VkPhysicalDeviceFeatures device_features;
+        static VkDevice device;
+        static bool logical_device_created;
     };
 }
 

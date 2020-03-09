@@ -2,6 +2,7 @@
 #include "baka_logger.h"
 #include "baka_vk_extensions.h"
 #include "baka_vk_validation.h"
+#include "baka_vk_queues.h"
 #include <SDL2/SDL_vulkan.h>
 
 namespace Baka
@@ -13,6 +14,12 @@ namespace Baka
     VkInstance Graphics::vk_instance;
     bool Graphics::validation;
     VkDebugUtilsMessengerEXT Graphics::debug_callback;
+    std::vector<VkPhysicalDevice> Graphics::devices;
+    VkPhysicalDevice Graphics::gpu;
+    VkSurfaceKHR Graphics::surface;
+    VkPhysicalDeviceFeatures Graphics::device_features;
+    VkDevice Graphics::device;
+    bool Graphics::logical_device_created;
 
     bool Graphics::Init( const char *windowName, int width, int height, bool validation )
     {
@@ -31,6 +38,8 @@ namespace Baka
 
         atexit(Graphics::Close);
 
+        
+
         bakalog("baka graphics initialized");
         return true;
     }
@@ -39,7 +48,9 @@ namespace Baka
     {
         uint32_t windowFlags = SDL_WINDOW_VULKAN;
         uint32_t sdlVulkanExtensionCount = 0;
+        uint32_t count = 0;
         VkResult res;
+        VkDeviceCreateInfo createInfo;
 
         window = SDL_CreateWindow(
             windowName,
@@ -88,9 +99,15 @@ namespace Baka
         if(validation)
         {
             baka_validation.Init();
+            
             baka_validation.RemoveLayer("VK_LAYER_LUNARG_vktrace");
             baka_validation.RemoveLayer("VK_LAYER_LUNARG_device_simulation");
             baka_validation.RemoveLayer("VK_LAYER_LUNARG_api_dump");
+            baka_validation.RemoveLayer("VK_LAYER_VALVE_steam_fossilize_64");
+            baka_validation.RemoveLayer("VK_LAYER_VALVE_steam_fossilize_32");
+            baka_validation.RemoveLayer("VK_LAYER_VALVE_steam_overlay_64");
+            baka_validation.RemoveLayer("VK_LAYER_VALVE_steam_overlay_32");
+
             vk_instance_info.enabledLayerCount = baka_validation.GetLayerCount();
             vk_instance_info.ppEnabledLayerNames = baka_validation.GetLayerNames();
             instance_extensions.EnableExtension("VK_EXT_debug_utils");
@@ -120,6 +137,35 @@ namespace Baka
             SetupDebug();
         }
 
+        vkEnumeratePhysicalDevices(vk_instance, &count, nullptr);
+        bakalog("Found %u %s for Vulkan", count, count > 1? "devices" : "device");
+        if(!count)
+        {
+            bakaerr("Could not find a device for application");
+            return false;
+        }
+
+        devices.resize(count);
+        vkEnumeratePhysicalDevices(vk_instance, &count, devices.data());
+
+        gpu = devices[0];
+
+        SDL_Vulkan_CreateSurface(window, vk_instance, &surface);
+        queue_manager.Init(gpu, surface);
+
+        device_extensions.Init(gpu);
+        device_extensions.EnableExtension("VK_KHR_swapchain");
+
+        createInfo = GetDeviceCreateInfo();
+
+        res = vkCreateDevice(gpu, &createInfo, nullptr, &device);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("Unable to create logical device");
+            return false;
+        }
+        logical_device_created = true;
+        
         return true;
     }
 
@@ -127,8 +173,17 @@ namespace Baka
     {
         bakalog("closing baka graphics");
 
+        if(logical_device_created)
+        {
+            vkDestroyDevice(device, nullptr);
+        }
+
         CloseDebug();
 
+        if(surface)
+        {
+            vkDestroySurfaceKHR(vk_instance, surface, nullptr);
+        }
         if(window)
         {
             SDL_DestroyWindow( window );
@@ -138,6 +193,35 @@ namespace Baka
         {
             vkDestroyInstance(vk_instance, nullptr);
         }
+    }
+
+    VkDeviceCreateInfo Graphics::GetDeviceCreateInfo()
+    {
+        VkDeviceCreateInfo createInfo = {};
+        uint32_t count;
+
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pQueueCreateInfos = queue_manager.GetCreateInfo(&count);
+        createInfo.queueCreateInfoCount = count;
+        
+        device_features.samplerAnisotropy = VK_TRUE;
+        
+        createInfo.pEnabledFeatures = &device_features;
+
+        createInfo.enabledExtensionCount = device_extensions.GetExtensionCount();
+        createInfo.ppEnabledExtensionNames = device_extensions.GetExtensionNames();
+
+        if(validation)
+        {
+            createInfo.enabledLayerCount = baka_validation.GetLayerCount();
+            createInfo.ppEnabledLayerNames = baka_validation.GetLayerNames();
+        }
+        else
+        {
+            createInfo.enabledLayerCount = 0;
+        }
+
+        return createInfo;
     }
     
     /* VULKAN DEBUG */

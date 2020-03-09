@@ -9,7 +9,7 @@ namespace Baka
     class VulkanExtensions
     {
     public:
-        virtual void Init() {};
+        virtual void Init(VkPhysicalDevice device = {}) {};
         const char **GetExtensionNames();
         uint32_t GetExtensionCount();
         bool EnableExtension(const char *name);
@@ -23,13 +23,13 @@ namespace Baka
     class VulkanInstanceExtensions : public VulkanExtensions
     {
     public:
-        void Init() override;
+        void Init(VkPhysicalDevice device = {}) override;
     };
 
     class VulkanDeviceExtensions : public VulkanExtensions
     {
     public:
-        void Init() override;
+        void Init(VkPhysicalDevice device) override;
     };
 
     static VulkanInstanceExtensions instance_extensions;

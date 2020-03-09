@@ -5,7 +5,7 @@
 
 namespace Baka
 {
-    void VulkanInstanceExtensions::Init()
+    void VulkanInstanceExtensions::Init(VkPhysicalDevice device)
     {
         uint32_t extensionCount;
         extension_names.clear();
@@ -20,14 +20,27 @@ namespace Baka
 
         for(const auto &extension : extensions)
         {
-            // extension_names.push_back(extension.extensionName);
             bakalog("\t%s", extension.extensionName);
         }
     }
 
-    void VulkanDeviceExtensions::Init()
+    void VulkanDeviceExtensions::Init(VkPhysicalDevice device)
     {
+        uint32_t extensionCount;
+        extension_names.clear();
+        extensions.clear();
 
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+        bakalog("Available device extensions: %u", extensionCount);
+        if(!extensionCount) return;
+
+        extensions.resize(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, extensions.data());
+
+        for(const auto &ext : extensions)
+        {
+            bakalog("\t%s", ext.extensionName);
+        }
     }
 
     bool VulkanExtensions::EnableExtension(const char *name)
