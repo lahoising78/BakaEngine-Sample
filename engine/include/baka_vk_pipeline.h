@@ -21,6 +21,8 @@ namespace baka
         void Free();
 
     private:
+        VkDevice device;
+
         std::vector<char> vertShaderCode;
         std::vector<char> fragShaderCode;
 

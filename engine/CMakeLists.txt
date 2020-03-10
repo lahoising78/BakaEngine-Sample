@@ -21,3 +21,6 @@ target_link_libraries(baka_engine ${SDL2_LIBRARIES})
 
 target_include_directories(baka_engine PRIVATE Vulkan::Vulkan)
 target_link_libraries(baka_engine Vulkan::Vulkan)
+
+configure_file("shaders/default_vert.sprv" "${CMAKE_HOME_DIRECTORY}/build/baka_engine/shaders/vert.sprv" COPYONLY)
+configure_file("shaders/default_frag.sprv" "${CMAKE_HOME_DIRECTORY}/build/baka_engine/shaders/frag.sprv" COPYONLY)

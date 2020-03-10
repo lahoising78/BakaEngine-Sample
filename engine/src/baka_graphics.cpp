@@ -50,7 +50,7 @@ namespace baka
         baka_texture_manager.Init(1024);
 
         baka_pipeline_manager.Init(4);
-        pipe = baka_pipeline_manager.CreateBasicModel(device, "shaders/vert.sprv", "shaders/frag.sprv", baka_swap.GetSwapchainExtent(), 1024);
+        pipe = baka_pipeline_manager.CreateBasicModel(device, "baka_engine/shaders/vert.sprv", "baka_engine/shaders/frag.sprv", baka_swap.GetSwapchainExtent(), 1024);
 
         bakalog("baka graphics initialized");
         return true;
