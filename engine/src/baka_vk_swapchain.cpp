@@ -191,15 +191,4 @@ namespace baka
             image_views[count] = Graphics::CreateImageView( images[count], formats[chosen_format].format );
         }
     }
-
-    VkDevice VulkanSwapchain::GetDevice()
-    {
-        return device;
-    }
-
-    VkSwapchainKHR VulkanSwapchain::GetSwapchain()
-    {
-        return swapchain;
-    }
-
 }

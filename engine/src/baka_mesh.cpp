@@ -14,6 +14,7 @@ namespace baka
             return;
         }
         mesh_list.resize(count);
+        bakalog("size of mesh list is %u", mesh_list.size());
 
         binding_description.binding = 0;
         binding_description.stride = sizeof(Vertex);

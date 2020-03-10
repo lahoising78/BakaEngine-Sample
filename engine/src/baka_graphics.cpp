@@ -6,6 +6,7 @@
 #include "baka_vk_swapchain.h"
 #include "baka_mesh.h"
 #include "baka_texture.h"
+#include "baka_vk_pipeline.h"
 #include <SDL2/SDL_vulkan.h>
 
 namespace baka
@@ -23,6 +24,7 @@ namespace baka
     VkPhysicalDeviceFeatures Graphics::device_features;
     VkDevice Graphics::device;
     bool Graphics::logical_device_created;
+    VulkanPipeline *Graphics::pipe;
 
     bool Graphics::Init( const char *windowName, int width, int height, bool validation )
     {
@@ -46,6 +48,9 @@ namespace baka
 
         baka_mesh.Init(1024);
         baka_texture_manager.Init(1024);
+
+        baka_pipeline_manager.Init(4);
+        pipe = baka_pipeline_manager.CreateBasicModel(device, "shaders/vert.sprv", "shaders/frag.sprv", baka_swap.GetSwapchainExtent(), 1024);
 
         bakalog("baka graphics initialized");
         return true;

@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <vector>
 #include <vulkan/vulkan.h>
+#include "baka_vk_pipeline.h"
 
 namespace baka{
     class Graphics
@@ -45,6 +46,7 @@ namespace baka{
         static VkPhysicalDeviceFeatures device_features;
         static VkDevice device;
         static bool logical_device_created;
+        static VulkanPipeline *pipe;
     };
 }
 
