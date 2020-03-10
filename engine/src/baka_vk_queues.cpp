@@ -8,6 +8,8 @@ namespace Baka
     static VulkanQueue present_queue;
     static VulkanQueue transfer_queue;
 
+    VulkanQueueManager queue_manager;
+
     void VulkanQueueManager::Init(VkPhysicalDevice device, VkSurfaceKHR surface)
     {
         uint32_t i;

@@ -7,10 +7,7 @@
 namespace Baka
 {
     static void SwapchainClose();
-    static VkDevice default_device;
-    static VkSwapchainKHR default_swapchain;
-    static std::vector<VkImageView> *default_image_views;
-    static std::vector<VkImage> *default_images;
+    VulkanSwapchain baka_swap;
 
     void VulkanSwapchain::Init(VkPhysicalDevice gpu, VkDevice device, VkSurfaceKHR surface, uint32_t width, uint32_t height)
     {
@@ -31,6 +28,7 @@ namespace Baka
             }
         }
 
+        count = 0;
         vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, surface, &count, nullptr);
         bakalog("%u present modes available", count);
         if( count != 0 )
@@ -52,30 +50,27 @@ namespace Baka
         extent = ConfigureExtent(width, height);
         bakalog("final extent: %u %u", extent.width, extent.height);
 
-        this->Create(device, surface);
+        Create(device, surface);
         this->device = device;
-
-        default_device = device;
-        default_swapchain = swapchain;
-        default_image_views = &image_views;
-        default_images = &images;
 
         atexit(SwapchainClose);
     }
 
     void SwapchainClose()
     {
+        baka_swap.Close();
+    }
+
+    void VulkanSwapchain::Close()
+    {
         uint32_t i;
-        vkDestroySwapchainKHR(default_device, default_swapchain, nullptr);
+        bakawarn("closing swap chain");
 
-        for(i = 0; i < default_image_views->size(); i++)
-        {
-            vkDestroyImageView(default_device, (*default_image_views)[i], nullptr);
-        }
+        vkDestroySwapchainKHR(device, swapchain, nullptr);
 
-        for(i = 0; i < default_images->size(); i++)
+        for(i = 0; i < image_views.size(); i++)
         {
-            vkDestroyImage(default_device, (*default_images)[i], nullptr);
+            vkDestroyImageView(device, image_views[i], nullptr);
         }
     }
 
@@ -185,6 +180,7 @@ namespace Baka
             return;
         }
 
+        bakalog("there are %u images available", count);
         images.resize(count);
         vkGetSwapchainImagesKHR(device, swapchain, &count, images.data());
         bakalog("created swapchain with %u images", count);

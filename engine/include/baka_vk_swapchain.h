@@ -10,6 +10,7 @@ namespace Baka
     {
     public:
         void Init(VkPhysicalDevice gpu, VkDevice device, VkSurfaceKHR surface, uint32_t width, uint32_t height);
+        void Close();
         VkDevice GetDevice();
         VkSwapchainKHR GetSwapchain();
 
@@ -33,7 +34,7 @@ namespace Baka
         VkDevice device;
     };
 
-    static VulkanSwapchain baka_swap = {};
+    extern VulkanSwapchain baka_swap;
 }
 
 #endif

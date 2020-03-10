@@ -39,7 +39,7 @@ namespace Baka
 
         atexit(Graphics::Close);
 
-        queue_manager.SetupDeviceQueues(device);
+        queue_manager.SetupDeviceQueues(Graphics::device);
         baka_swap.Init(gpu, device, surface, width, height);
 
         bakalog("baka graphics initialized");

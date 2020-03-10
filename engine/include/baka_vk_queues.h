@@ -43,7 +43,7 @@ namespace Baka
         std::vector<VkDeviceQueueCreateInfo> create_info;
     };
 
-    static VulkanQueueManager queue_manager;
+    extern VulkanQueueManager queue_manager;
 }
 
 #endif
