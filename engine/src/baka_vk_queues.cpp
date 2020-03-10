@@ -2,7 +2,7 @@
 #include "baka_vk_queues.h"
 #include <cstdlib>
 
-namespace Baka
+namespace baka
 {
     static VulkanQueue graphics_queue;
     static VulkanQueue present_queue;

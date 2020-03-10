@@ -3,7 +3,7 @@
 #include "baka_logger.h"
 #include "baka_vk_validation.h"
 
-namespace Baka
+namespace baka
 {
     void VulkanValidation::Init()
     {

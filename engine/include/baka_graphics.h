@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-namespace Baka{
+namespace baka{
     class Graphics
     {
     public:

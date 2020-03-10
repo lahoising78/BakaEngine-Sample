@@ -10,11 +10,11 @@ int main(int argc, char *argv[])
     bool validation = true;
     bakalog("--==== Start of application ====--");
 
-    running = Baka::Graphics::Init("Baka Engine", 1280, 720, validation);
+    running = baka::Graphics::Init("Baka Engine", 1280, 720, validation);
 
     if(running)
     {
-        Baka::Input::Init();
+        baka::Input::Init();
         
         BakaMain(argc, argv);
     }
@@ -22,9 +22,9 @@ int main(int argc, char *argv[])
     bakalog("--==== Update of application ====--");
     while(running)
     {
-        Baka::Input::Update();
+        baka::Input::Update();
 
-        if( Baka::Input::QuitRequested() || Baka::Input::KeyPressed(SDL_SCANCODE_ESCAPE) )
+        if( baka::Input::QuitRequested() || baka::Input::KeyPressed(SDL_SCANCODE_ESCAPE) )
         {
             running = false;
         }

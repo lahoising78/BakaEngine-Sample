@@ -13,7 +13,7 @@ int BakaMain(int argc, char *argv[])
 
 void BakaUpdate(float deltaTime)
 {
-    if( Baka::Input::KeyPressed(SDL_SCANCODE_R) )
+    if( baka::Input::KeyPressed(SDL_SCANCODE_R) )
     {
         bakalog("you just pressed R");
     }

@@ -5,7 +5,7 @@
 
 #define BAKA_NUM_KEYS SDL_NUM_SCANCODES
 
-namespace Baka
+namespace baka
 {
     class Input
     {

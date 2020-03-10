@@ -1,7 +1,7 @@
 #include "baka_input.h"
 #include "baka_logger.h"
 
-namespace Baka
+namespace baka
 {
     SDL_KeyboardEvent Input::keyboard[ BAKA_NUM_KEYS ];
     SDL_QuitEvent Input::quitEvent;

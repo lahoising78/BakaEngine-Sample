@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-namespace Baka
+namespace baka
 {
     class VulkanValidation
     {

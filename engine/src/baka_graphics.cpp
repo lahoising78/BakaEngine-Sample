@@ -6,7 +6,7 @@
 #include "baka_vk_swapchain.h"
 #include <SDL2/SDL_vulkan.h>
 
-namespace Baka
+namespace baka
 {
     std::vector<const char *> Graphics::sdl_vulkan_extension_names;
     SDL_Window *Graphics::window = nullptr;
@@ -41,6 +41,8 @@ namespace Baka
 
         queue_manager.SetupDeviceQueues(Graphics::device);
         baka_swap.Init(gpu, device, surface, width, height);
+
+
 
         bakalog("baka graphics initialized");
         return true;

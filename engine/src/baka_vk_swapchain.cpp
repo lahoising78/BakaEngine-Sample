@@ -4,7 +4,7 @@
 #include <algorithm>
 #include "baka_graphics.h"
 
-namespace Baka
+namespace baka
 {
     static void SwapchainClose();
     VulkanSwapchain baka_swap;

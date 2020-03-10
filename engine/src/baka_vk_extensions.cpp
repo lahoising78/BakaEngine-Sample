@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <string.h>
 
-namespace Baka
+namespace baka
 {
     void VulkanInstanceExtensions::Init(VkPhysicalDevice device)
     {
