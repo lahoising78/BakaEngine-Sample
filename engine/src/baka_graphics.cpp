@@ -4,6 +4,8 @@
 #include "baka_vk_validation.h"
 #include "baka_vk_queues.h"
 #include "baka_vk_swapchain.h"
+#include "baka_mesh.h"
+#include "baka_texture.h"
 #include <SDL2/SDL_vulkan.h>
 
 namespace baka
@@ -42,7 +44,8 @@ namespace baka
         queue_manager.SetupDeviceQueues(Graphics::device);
         baka_swap.Init(gpu, device, surface, width, height);
 
-
+        baka_mesh.Init(1024);
+        baka_texture_manager.Init(1024);
 
         bakalog("baka graphics initialized");
         return true;
@@ -250,6 +253,11 @@ namespace baka
         }
 
         return imageView;
+    }
+
+    VkDevice Graphics::GetDefaultLogicalDevice()
+    {
+        return device;
     }
     
     /* VULKAN DEBUG */
