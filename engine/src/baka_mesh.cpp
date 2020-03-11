@@ -16,10 +16,12 @@ namespace baka
         mesh_list.resize(count);
         bakalog("size of mesh list is %u", mesh_list.size());
 
-        binding_description.binding = 0;
-        binding_description.stride = sizeof(Vertex);
-        binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        binding_description.resize(1);
+        binding_description[0].binding = 0;
+        binding_description[0].stride = sizeof(Vertex);
+        binding_description[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
+        attribute_description.resize(BAKA_ATTRIBUTE_DESCRIPTION_COUNT);
         attribute_description[0].binding = 0;
         attribute_description[0].location = 0;
         attribute_description[0].format = VK_FORMAT_R32G32B32_SFLOAT;

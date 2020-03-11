@@ -19,15 +19,18 @@ namespace baka
     {
     private:
         void Free();
+        void CreateDescriptorSetLayout();
 
     private:
         VkDevice device;
 
-        std::vector<char> vertShaderCode;
-        std::vector<char> fragShaderCode;
+        std::vector<char> vert_shader_code;
+        std::vector<char> frag_shader_code;
 
-        VkShaderModule vertModule;
-        VkShaderModule fragModule;
+        VkShaderModule vert_module;
+        VkShaderModule frag_module;
+
+        VkDescriptorSetLayout descriptor_set_layout;
 
         bool inuse;
         friend class VulkanPipelineManager;
