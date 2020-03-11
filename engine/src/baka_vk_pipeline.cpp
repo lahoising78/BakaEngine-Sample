@@ -54,6 +54,7 @@ namespace baka
         VkPipelineDepthStencilStateCreateInfo depthStencil = {};
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
         VkPipelineColorBlendStateCreateInfo colorBlend = {};
+        VkPipelineLayoutCreateInfo pipeLayoutInfo = {};
 
         VulkanPipeline *pipe = VulkanPipelineNew();
         if(!pipe) return nullptr;
@@ -65,6 +66,8 @@ namespace baka
         pipe->frag_module = CreateModule(pipe->frag_shader_code, device);
 
         pipe->device = device;
+        // pipe->descriptor_set_count = count;
+        pipe->descriptor_set_count = swap_length;
 
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = VK_TRUE;
@@ -168,9 +171,56 @@ namespace baka
         colorBlend.blendConstants[2] = 0.0f; // Optional
         colorBlend.blendConstants[3] = 0.0f; // Optional
 
+        pipe->CreateDescriptorSetPool();
         pipe->CreateDescriptorSetLayout();
+        pipe->CreateDescriptorSets();
+
+        pipeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipeLayoutInfo.setLayoutCount = 1;
+        pipeLayoutInfo.pSetLayouts = &pipe->descriptor_set_layout;
+        /* push constants: https://stackoverflow.com/questions/50956414/what-is-a-push-constant-in-vulkan
+        basically these allow us to pass data to the shaders faster than ubo's, however the amount of data you can send is limited
+        and varies depending on the hardware */
+        pipeLayoutInfo.pushConstantRangeCount = 0;
+        pipeLayoutInfo.pPushConstantRanges = nullptr;
 
         return pipe;
+    }
+
+    /* need descriptor pools to create descriptor sets 
+    helpful link: https://www.reddit.com/r/vulkan/comments/8u9zqr/having_trouble_understanding_descriptor_pool/ 
+    CANNOT call this from a thread */
+    void VulkanPipeline::CreateDescriptorSetPool()
+    {
+        VkDescriptorPoolCreateInfo createInfo = {};
+        std::vector<VkDescriptorPoolSize> poolSizes(2);
+        VkResult res;
+
+        /* pool sizes describe how many descriptors we will need in total for each type of descriptor set */
+        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSizes[0].descriptorCount = descriptor_set_count;
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[1].descriptorCount = descriptor_set_count;
+
+        createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        /* max sets is the total amount of descriptor sets we can allocate from pool */
+        createInfo.maxSets = descriptor_set_count;
+        /* pool size count is the total number of poolSizes we are passing */
+        createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+        /* pPoolSizes is a pointer to the first element of the array of poolSizes */
+        createInfo.pPoolSizes = (VkDescriptorPoolSize*)poolSizes.data();
+
+        descriptor_pool.resize(1);
+        res = vkCreateDescriptorPool(device, &createInfo, nullptr, (VkDescriptorPool*)descriptor_pool.data());
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("descriptor pool creation failed with error code %d", res);
+        }
+
+        /** @note we can also create descriptor set pools with different flag bits.
+         * one of those is VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT
+         * this flag bit allows each descriptor set in the descriptor pool to be freed individually, instead of all at once
+         */
     }
 
     void VulkanPipeline::CreateDescriptorSetLayout()
@@ -204,13 +254,51 @@ namespace baka
         res = vkCreateDescriptorSetLayout(device, &createInfo, nullptr, &descriptor_set_layout);
         if(res != VK_SUCCESS)
         {
-            bakaerr("failed to create descriptor set layer. error code: %u", res);
+            bakaerr("failed to create descriptor set layer. error code: %d", res);
         }
+
+    }
+
+    /** @note that a single descriptor set can only be used once during each command recording */
+    void VulkanPipeline::CreateDescriptorSets()
+    {
+        VkDescriptorSetAllocateInfo allocInfo = {};
+        VkResult res;
+        // uint32_t i;
+        std::vector<VkDescriptorSetLayout> layouts(descriptor_set_count, descriptor_set_layout);
+
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = descriptor_pool[0];
+        allocInfo.descriptorSetCount = descriptor_set_count;
+        allocInfo.pSetLayouts = (VkDescriptorSetLayout*)layouts.data();
+
+        descriptor_sets.resize(descriptor_set_count);
+        res = vkAllocateDescriptorSets(device, &allocInfo, (VkDescriptorSet*)descriptor_sets.data());
+        if( res != VK_SUCCESS )
+        {
+            bakaerr("descriptor set allocation failed with error code %d", res);
+        }
+    }
+
+    void VulkanPipeline::SetupRenderPass()
+    {
 
     }
 
     void VulkanPipeline::Free()
     {
+        uint32_t i;
+        for(i = 0; i < descriptor_pool.size(); i++)
+        {
+            if( descriptor_pool[i] != VK_NULL_HANDLE )
+                vkDestroyDescriptorPool(device, descriptor_pool[i], nullptr);
+        }
+
+        if(descriptor_set_layout != VK_NULL_HANDLE)
+        {
+            vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
+        }
+
         if(vert_module != VK_NULL_HANDLE)
         {
             vkDestroyShaderModule(device, vert_module, nullptr);

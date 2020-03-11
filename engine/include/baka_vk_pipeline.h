@@ -20,6 +20,9 @@ namespace baka
     private:
         void Free();
         void CreateDescriptorSetLayout();
+        void CreateDescriptorSetPool();
+        void CreateDescriptorSets();
+        void SetupRenderPass();
 
     private:
         VkDevice device;
@@ -30,7 +33,10 @@ namespace baka
         VkShaderModule vert_module;
         VkShaderModule frag_module;
 
+        uint32_t descriptor_set_count;
         VkDescriptorSetLayout descriptor_set_layout;
+        std::vector<VkDescriptorPool> descriptor_pool;
+        std::vector<VkDescriptorSet> descriptor_sets;
 
         bool inuse;
         friend class VulkanPipelineManager;

@@ -14,7 +14,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(Sample)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Werror")
+# -Wpedantic -Werror --verbose")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall") 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpedantic") 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror") 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --verbose") 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/")
 
 add_subdirectory(../engine "${CMAKE_CURRENT_SOURCE_DIR}/build/baka_engine/")
