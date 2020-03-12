@@ -11,6 +11,7 @@ namespace baka
     public:
         void Init(VkPhysicalDevice gpu, VkDevice device, VkSurfaceKHR surface, uint32_t width, uint32_t height);
         void Close();
+        void CreateDepthImage();
         VkSwapchainKHR GetSwapchain() {return swapchain;}
         uint32_t GetSwapchainLength() {return swapchain_count;}
         VkExtent2D GetSwapchainExtent() {return extent;}
@@ -21,6 +22,8 @@ namespace baka
         uint32_t ChoosePresentMode();
         VkExtent2D ConfigureExtent(uint32_t width, uint32_t height);
         void Create(VkDevice device, VkSurfaceKHR surface);
+        bool CreateImage(uint32_t w, uint32_t h, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage* image, VkDeviceMemory* imageMemory);
+        uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     private:
         VkSurfaceCapabilitiesKHR capabilities;
@@ -33,6 +36,9 @@ namespace baka
         VkSwapchainKHR swapchain;
         std::vector<VkImage> images;
         std::vector<VkImageView> image_views;
+        VkImage depth_image;
+        VkImageView depth_image_view;
+        VkDeviceMemory depth_image_memory;
         VkDevice device;
     };
 

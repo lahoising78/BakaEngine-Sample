@@ -67,6 +67,9 @@ namespace baka
             queue_manager.GetQueueFamily(VulkanQueueType::QUEUE_TYPE_GRAPHICS)
         );
 
+        /* we need a depth image for depth test and stuff, but the swap chain doesn't create it automatically, so create it */
+        baka_swap.CreateDepthImage();
+
         bakalog("baka graphics initialized");
         return true;
     }
@@ -253,7 +256,7 @@ namespace baka
         return createInfo;
     }
 
-    VkImageView Graphics::CreateImageView(VkImage image, VkFormat format)
+    VkImageView Graphics::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
     {
         VkImageView imageView;
         VkImageViewCreateInfo viewInfo = {};
@@ -262,7 +265,7 @@ namespace baka
         viewInfo.image = image;
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         viewInfo.format = format;
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.aspectMask = aspectFlags;
         viewInfo.subresourceRange.baseMipLevel = 0;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = 0;

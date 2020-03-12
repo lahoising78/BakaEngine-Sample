@@ -66,12 +66,129 @@ namespace baka
         uint32_t i;
         bakawarn("closing swap chain");
 
-        vkDestroySwapchainKHR(device, swapchain, nullptr);
+        if(depth_image_view != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(device, depth_image_view, nullptr);
+        }
+
+        if(depth_image != VK_NULL_HANDLE)
+        {
+            vkDestroyImage(device, depth_image, nullptr);
+        }
+
+        if(depth_image_memory != VK_NULL_HANDLE)
+        {
+            vkFreeMemory(device, depth_image_memory, nullptr);
+        }
+
+        if(swapchain != VK_NULL_HANDLE)
+        {
+            vkDestroySwapchainKHR(device, swapchain, nullptr);
+        }
 
         for(i = 0; i < image_views.size(); i++)
         {
             vkDestroyImageView(device, image_views[i], nullptr);
         }
+
+    }
+
+    void VulkanSwapchain::CreateDepthImage()
+    {
+        CreateImage(
+            extent.width, extent.height,
+            Graphics::GetDefaultPipeline()->FindDepthFormat(),
+            /** 
+             * tiling specifies tiling arrangement in memory. 
+             * as far as im aware, we would only use the other type
+             * of tiling if we were to copy data into the image 
+             * https://www.reddit.com/r/vulkan/comments/71k4gy/why_is_vk_image_tiling_linear_so_limited/ */
+            VK_IMAGE_TILING_OPTIMAL,                                
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            /* make it as optimal as possible for the device */
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            &depth_image, &depth_image_memory
+        );
+
+        /* get image view for depth image */
+        depth_image_view = Graphics::CreateImageView(
+            depth_image, 
+            Graphics::GetDefaultPipeline()->FindDepthFormat(), 
+            VK_IMAGE_ASPECT_DEPTH_BIT
+        );
+
+        /** 
+         * eventually we will need to transition the image to from undefined layout to depth stencil attachment.
+         * we told the render pass to do that already, so yeah. but you could do it here */
+    }
+
+    bool VulkanSwapchain::CreateImage(uint32_t w, uint32_t h, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage* image, VkDeviceMemory* imageMemory)
+    {
+        VkImageCreateInfo imageInfo = {};
+        VkMemoryAllocateInfo allocInfo = {};
+        VkMemoryRequirements memRequirements;
+        VkResult res;
+
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = w;
+        imageInfo.extent.height = h;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = format;
+        imageInfo.tiling = tiling;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = usage;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateImage(device, &imageInfo, NULL, image) != VK_SUCCESS)
+        {
+            bakawarn("failed to create image!");
+            return false;
+        }
+
+        vkGetImageMemoryRequirements(device, *image, &memRequirements);
+
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+
+        /* allocate device memory */
+        res = vkAllocateMemory(device, &allocInfo, NULL, imageMemory);
+        if (res != VK_SUCCESS)
+        {
+            bakawarn("image memory allocation failed with error code %d", res);
+            vkDestroyImage(device, *image, nullptr);
+            return false;
+        }
+
+        /* bind memory to image */
+        vkBindImageMemory(device, *image, *imageMemory, 0);
+
+        bakalog("depth image creation completed");
+        return true;
+    }
+
+    uint32_t VulkanSwapchain::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+    {
+        VkPhysicalDeviceMemoryProperties memProperties;
+    
+        /* query supported device memory properties */
+        vkGetPhysicalDeviceMemoryProperties(Graphics::GetDefaultPhysicalDevice(), &memProperties);
+
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+        {
+            /* matches filter and property flags */
+            if ((typeFilter & (1 << i)) && ((memProperties.memoryTypes[i].propertyFlags & properties) == properties))
+            {
+                return i;
+            }
+        }
+
+        bakawarn("failed to find suitable memory type");
+        return 0;
     }
 
     uint32_t VulkanSwapchain::ChooseFormat()
@@ -188,7 +305,7 @@ namespace baka
         image_views.resize(count);
         for(count = 0; count < image_views.size(); count++)
         {
-            image_views[count] = Graphics::CreateImageView( images[count], formats[chosen_format].format );
+            image_views[count] = Graphics::CreateImageView( images[count], formats[chosen_format].format, VK_IMAGE_ASPECT_COLOR_BIT );
         }
     }
 }

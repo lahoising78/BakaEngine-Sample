@@ -17,6 +17,9 @@ namespace baka
 {
     class VulkanPipeline
     {
+    public:
+        VkFormat FindDepthFormat();
+
     private:
         void Free();
         void CreateDescriptorSetLayout();
@@ -25,7 +28,6 @@ namespace baka
         void SetupRenderPass();
 
         VkFormat FindSupportedFormat(std::vector<VkFormat> candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-        VkFormat FindDepthFormat();
 
     private:
         VkDevice device;

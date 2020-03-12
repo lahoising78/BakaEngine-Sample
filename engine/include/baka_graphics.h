@@ -12,7 +12,7 @@ namespace baka{
     {
     public:
         static bool Init( const char *windowName, int width, int height, bool validation );
-        static VkImageView CreateImageView(VkImage image, VkFormat format);
+        static VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
         static VkDevice GetDefaultLogicalDevice();
         static VkPhysicalDevice GetDefaultPhysicalDevice() { return gpu; }
         static VulkanPipeline *GetDefaultPipeline() { return pipe; }
