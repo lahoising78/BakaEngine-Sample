@@ -34,6 +34,8 @@ namespace baka{
         static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
         static void CloseDebug();
         static VkDeviceCreateInfo GetDeviceCreateInfo();
+        static void CreateSemaphores();
+        static void CreateSingleSemaphore(VkSemaphore *sem);
 
     private:
         static SDL_Window *window;
@@ -50,6 +52,8 @@ namespace baka{
         static VkDevice device;
         static bool logical_device_created;
         static VulkanPipeline *pipe;
+        static VkSemaphore image_available_sem;
+        static VkSemaphore render_finished_sem;
         static VulkanCommand render_vk_command;
     };
 }

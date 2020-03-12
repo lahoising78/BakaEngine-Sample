@@ -27,6 +27,8 @@ namespace baka
     bool Graphics::logical_device_created;
     VulkanPipeline *Graphics::pipe;
     VulkanCommand Graphics::render_vk_command;
+    VkSemaphore Graphics::image_available_sem;
+    VkSemaphore Graphics::render_finished_sem;
 
     bool Graphics::Init( const char *windowName, int width, int height, bool validation )
     {
@@ -70,6 +72,9 @@ namespace baka
         /* we need a depth image for depth test and stuff, but the swap chain doesn't create it automatically, so create it */
         baka_swap.CreateDepthImage();
         baka_swap.CreateFramebuffers(pipe);
+
+        /* when we start rendering, we are going to need semaphores to tell the program when it is ok to continue */
+        CreateSemaphores();
 
         bakalog("baka graphics initialized");
         return true;
@@ -200,9 +205,38 @@ namespace baka
         return true;
     }
 
+    void Graphics::CreateSemaphores()
+    {
+        CreateSingleSemaphore(&image_available_sem);
+        CreateSingleSemaphore(&render_finished_sem);
+    }
+
+    void Graphics::CreateSingleSemaphore(VkSemaphore *sem)
+    {
+        VkResult res;
+        VkSemaphoreCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        res = vkCreateSemaphore(device, &info, nullptr, sem);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("semaphore creation failed with error code %d", res);
+        }
+    }
+
     void Graphics::Close()
     {
         bakalog("closing baka graphics");
+
+        if(image_available_sem != VK_NULL_HANDLE)
+        {
+            vkDestroySemaphore(device, image_available_sem, nullptr);
+        }
+
+        if(render_finished_sem != VK_NULL_HANDLE)
+        {
+            vkDestroySemaphore(device, render_finished_sem, nullptr);
+        }
 
         render_vk_command.Free();
 
@@ -226,6 +260,7 @@ namespace baka
         {
             vkDestroyInstance(vk_instance, nullptr);
         }
+
     }
 
     VkDeviceCreateInfo Graphics::GetDeviceCreateInfo()
