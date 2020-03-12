@@ -24,6 +24,9 @@ namespace baka
         void CreateDescriptorSets();
         void SetupRenderPass();
 
+        VkFormat FindSupportedFormat(std::vector<VkFormat> candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        VkFormat FindDepthFormat();
+
     private:
         VkDevice device;
 
@@ -37,6 +40,10 @@ namespace baka
         VkDescriptorSetLayout descriptor_set_layout;
         std::vector<VkDescriptorPool> descriptor_pool;
         std::vector<VkDescriptorSet> descriptor_sets;
+
+        VkRenderPass render_pass;
+
+        VkPipelineLayout pipeline_layout;
 
         bool inuse;
         friend class VulkanPipelineManager;

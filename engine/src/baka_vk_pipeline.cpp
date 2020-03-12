@@ -2,6 +2,7 @@
 #include "baka_vk_swapchain.h"
 #include "baka_shader.h"
 #include "baka_vk_pipeline.h"
+#include "baka_graphics.h"
 #include "baka_mesh.h"
 #include <cstdlib>
 
@@ -55,6 +56,7 @@ namespace baka
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
         VkPipelineColorBlendStateCreateInfo colorBlend = {};
         VkPipelineLayoutCreateInfo pipeLayoutInfo = {};
+        VkResult res;
 
         VulkanPipeline *pipe = VulkanPipelineNew();
         if(!pipe) return nullptr;
@@ -184,6 +186,16 @@ namespace baka
         pipeLayoutInfo.pushConstantRangeCount = 0;
         pipeLayoutInfo.pPushConstantRanges = nullptr;
 
+        pipe->SetupRenderPass();
+
+        res = vkCreatePipelineLayout(device, &pipeLayoutInfo, nullptr, &pipe->pipeline_layout);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("pipeline layout creation failed with error code %d", res);
+            pipe->Free();
+            return nullptr;
+        }
+
         return pipe;
     }
 
@@ -280,9 +292,134 @@ namespace baka
         }
     }
 
+    /** 
+     * the render pass is where we tell vulkan about the framebuffer attachments we need.
+     * this is where we specify depth and color buffers, as well as how many samples to use for each of them
+     * and how their contents should be handled during rendering operations
+     * https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Render_passes
+     */
     void VulkanPipeline::SetupRenderPass()
     {
+        VkAttachmentReference depthAttachmentRef = {};
+        VkAttachmentDescription depthAttachment = {};
+        VkAttachmentReference colorAttachmentRef = {};
+        VkAttachmentDescription colorAttachment = {};
+        std::vector<VkAttachmentDescription> attachments(2);
+        VkSubpassDependency dependency = {};
+        VkSubpassDescription subpass = {};
+        VkRenderPassCreateInfo createInfo = {};
+        VkResult res;
 
+        /* the depth attachment is how we tell vulkan how to calculate what goes on top of what */
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthAttachmentRef.attachment = 1;
+
+        /* tell the attachment description that we are looking for a depth image */
+        depthAttachment.format = FindDepthFormat();
+        /* only one sample please */
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        /* don't realy care about loading what we had before */
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        /* and we don't care about storing the results of the operation either */
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        /* we don't care what was previously in that image */
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        /* but we are sure that we want a depth image in the end */
+        depthAttachment.finalLayout = depthAttachmentRef.layout;
+
+        /** 
+         * apparently these describe exectuion and memory dependencies between subpasses:
+         * https://vulkan.lunarg.com/doc/view/1.0.37.0/linux/vkspec.chunked/ch07.html
+         * https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Rendering_and_presentation
+         *  */
+        /** 
+         * this subpass external refers to the subpass that occurs at the beginning or end of render pass 
+         * this depends on if it is specified in srcSubpass or dstSubpass.
+         * it's on srcSubpass so it's the one that occurs in the beginning of the renderpass;
+         * */
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        /* a 0 means that it is the one we are currently on */
+        dependency.dstSubpass = 0;
+        /* wait for swapchain to finish reading from image */
+        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        /* this operation happens in the current subpass */
+        dependency.srcAccessMask = 0;
+        /* the operation happens during the color attachment subpass */
+        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        /* which involves reading and writing the color attachment */
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachmentRef.attachment = 0;
+
+        colorAttachment.format = baka_swap.GetChosenFormat().format;
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        /* we want to clear all colors from the image before we start working on it. it essentially turns all pixel to the clear color */
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        /* store the pixels so we can see it displayed on the screen later */
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        /* have a read about stencil buffers: https://computergraphics.stackexchange.com/questions/12/what-is-a-stencil-buffer */
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = 1;
+        subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+        attachments[0] = colorAttachment;
+        attachments[1] = depthAttachment;
+
+        createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        createInfo.attachmentCount = attachments.size();
+        createInfo.pAttachments = (VkAttachmentDescription*)attachments.data();
+        createInfo.pSubpasses = &subpass;
+        createInfo.subpassCount = 1;
+        createInfo.pDependencies = &dependency;
+        createInfo.dependencyCount = 1;
+
+        res = vkCreateRenderPass(device, &createInfo, nullptr, &render_pass);
+        if( res != VK_SUCCESS )
+        {
+            bakaerr("render pass failed with error code %d", res);
+        }
+    }
+
+    VkFormat VulkanPipeline::FindSupportedFormat(std::vector<VkFormat> candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+    {
+        uint32_t i;
+        VkFormatProperties props = {0};
+        for (i = 0; i < candidates.size();i++)
+        {
+            vkGetPhysicalDeviceFormatProperties(Graphics::GetDefaultPhysicalDevice(), candidates[i], &props);
+
+            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+            {
+                return candidates[i];
+            }
+            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+            {
+                return candidates[i];
+            }
+        }
+
+        bakawarn("failed to find supported format!");
+        return (VkFormat)VK_NULL_HANDLE;
+    }
+
+    VkFormat VulkanPipeline::FindDepthFormat()
+    {
+        /* D stands for depth */
+        std::vector<VkFormat> format = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
+        return FindSupportedFormat(
+            format,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+        );
     }
 
     void VulkanPipeline::Free()
@@ -297,6 +434,16 @@ namespace baka
         if(descriptor_set_layout != VK_NULL_HANDLE)
         {
             vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
+        }
+
+        if(pipeline_layout != VK_NULL_HANDLE)
+        {
+            vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
+        }
+
+        if(render_pass != VK_NULL_HANDLE)
+        {
+            vkDestroyRenderPass(device, render_pass, nullptr);
         }
 
         if(vert_module != VK_NULL_HANDLE)

@@ -11,10 +11,10 @@ namespace baka
     public:
         void Init(VkPhysicalDevice gpu, VkDevice device, VkSurfaceKHR surface, uint32_t width, uint32_t height);
         void Close();
-        VkDevice GetDevice() {return device;}
         VkSwapchainKHR GetSwapchain() {return swapchain;}
         uint32_t GetSwapchainLength() {return swapchain_count;}
         VkExtent2D GetSwapchainExtent() {return extent;}
+        VkSurfaceFormatKHR GetChosenFormat() { return formats[chosen_format]; }
 
     private:
         uint32_t ChooseFormat();
