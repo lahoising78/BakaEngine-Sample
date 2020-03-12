@@ -69,6 +69,7 @@ namespace baka
 
         /* we need a depth image for depth test and stuff, but the swap chain doesn't create it automatically, so create it */
         baka_swap.CreateDepthImage();
+        baka_swap.CreateFramebuffers(pipe);
 
         bakalog("baka graphics initialized");
         return true;

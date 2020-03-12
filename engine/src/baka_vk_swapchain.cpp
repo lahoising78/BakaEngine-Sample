@@ -81,6 +81,14 @@ namespace baka
             vkFreeMemory(device, depth_image_memory, nullptr);
         }
 
+        for(i = 0; i < framebuffers.size(); i++)
+        {
+            if(framebuffers[i] != VK_NULL_HANDLE)
+            {
+                vkDestroyFramebuffer(device, framebuffers[i], nullptr);
+            }
+        }
+
         if(swapchain != VK_NULL_HANDLE)
         {
             vkDestroySwapchainKHR(device, swapchain, nullptr);
@@ -306,6 +314,41 @@ namespace baka
         for(count = 0; count < image_views.size(); count++)
         {
             image_views[count] = Graphics::CreateImageView( images[count], formats[chosen_format].format, VK_IMAGE_ASPECT_COLOR_BIT );
+        }
+    }
+
+    void VulkanSwapchain::CreateFramebuffers( VulkanPipeline *pipe )
+    {
+        uint32_t i;
+        if(!pipe) return;
+
+        framebuffers.resize(swapchain_count);
+        for(i = 0; i < swapchain_count; i++)
+        {
+            std::vector<VkImageView> views = {image_views[i], depth_image_view};
+            CreateSingleFramebuffer(pipe, views, &framebuffers[i]);
+        }
+
+        bakalog("created framebuffers");
+    }
+
+    void VulkanSwapchain::CreateSingleFramebuffer( VulkanPipeline *pipe, std::vector<VkImageView> &views, VkFramebuffer *dst )
+    {
+        VkFramebufferCreateInfo createInfo = {};
+        VkResult res;
+
+        createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        createInfo.renderPass = pipe->GetRenderPass();
+        createInfo.attachmentCount = views.size();
+        createInfo.pAttachments = views.data();
+        createInfo.height = extent.height;
+        createInfo.width = extent.width;
+        createInfo.layers = 1;
+
+        res = vkCreateFramebuffer(device, &createInfo, nullptr, dst);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("framebuffer creation failed with error code %d", res);
         }
     }
 }

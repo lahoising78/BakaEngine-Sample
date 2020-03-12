@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
+#include "baka_vk_pipeline.h"
 
 namespace baka
 {
@@ -12,6 +13,7 @@ namespace baka
         void Init(VkPhysicalDevice gpu, VkDevice device, VkSurfaceKHR surface, uint32_t width, uint32_t height);
         void Close();
         void CreateDepthImage();
+        void CreateFramebuffers( VulkanPipeline *pipe );
         VkSwapchainKHR GetSwapchain() {return swapchain;}
         uint32_t GetSwapchainLength() {return swapchain_count;}
         VkExtent2D GetSwapchainExtent() {return extent;}
@@ -24,6 +26,7 @@ namespace baka
         void Create(VkDevice device, VkSurfaceKHR surface);
         bool CreateImage(uint32_t w, uint32_t h, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage* image, VkDeviceMemory* imageMemory);
         uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+        void CreateSingleFramebuffer( VulkanPipeline *pipe, std::vector<VkImageView> &views, VkFramebuffer *dst );
 
     private:
         VkSurfaceCapabilitiesKHR capabilities;
@@ -39,6 +42,7 @@ namespace baka
         VkImage depth_image;
         VkImageView depth_image_view;
         VkDeviceMemory depth_image_memory;
+        std::vector<VkFramebuffer> framebuffers;            /* idk what this does, but all our work has been all about this */
         VkDevice device;
     };
 

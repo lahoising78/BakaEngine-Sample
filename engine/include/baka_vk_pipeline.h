@@ -19,6 +19,7 @@ namespace baka
     {
     public:
         VkFormat FindDepthFormat();
+        VkRenderPass GetRenderPass() {return render_pass;}
 
     private:
         void Free();
