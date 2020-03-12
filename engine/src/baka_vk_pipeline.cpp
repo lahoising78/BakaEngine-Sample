@@ -219,6 +219,7 @@ namespace baka
         {
             bakaerr("pipeline creation failed with error code %d", res);
             pipe->Free();
+            return nullptr;
         }
 
         return pipe;

@@ -5,6 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 #include "baka_vk_pipeline.h"
+#include "baka_vk_command.h"
 
 namespace baka{
     class Graphics
@@ -14,6 +15,7 @@ namespace baka{
         static VkImageView CreateImageView(VkImage image, VkFormat format);
         static VkDevice GetDefaultLogicalDevice();
         static VkPhysicalDevice GetDefaultPhysicalDevice() { return gpu; }
+        static VulkanPipeline *GetDefaultPipeline() { return pipe; }
 
     private:
         static bool Setup( const char *windowName, int width, int height );
@@ -48,6 +50,7 @@ namespace baka{
         static VkDevice device;
         static bool logical_device_created;
         static VulkanPipeline *pipe;
+        static VulkanCommand render_vk_command;
     };
 }
 

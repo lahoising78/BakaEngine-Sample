@@ -7,6 +7,7 @@
 #include "baka_mesh.h"
 #include "baka_texture.h"
 #include "baka_vk_pipeline.h"
+#include "baka_model.h"
 #include <SDL2/SDL_vulkan.h>
 
 namespace baka
@@ -25,6 +26,7 @@ namespace baka
     VkDevice Graphics::device;
     bool Graphics::logical_device_created;
     VulkanPipeline *Graphics::pipe;
+    VulkanCommand Graphics::render_vk_command;
 
     bool Graphics::Init( const char *windowName, int width, int height, bool validation )
     {
@@ -50,7 +52,20 @@ namespace baka
         baka_texture_manager.Init(1024);
 
         baka_pipeline_manager.Init(4);
-        pipe = baka_pipeline_manager.CreateBasicModel(device, "baka_engine/shaders/vert.sprv", "baka_engine/shaders/frag.sprv", baka_swap.GetSwapchainExtent(), 1024);
+        pipe = baka_pipeline_manager.CreateBasicModel(
+            device, 
+            "baka_engine/shaders/vert.sprv", 
+            "baka_engine/shaders/frag.sprv", 
+            baka_swap.GetSwapchainExtent(), 
+            1024
+        );
+        baka_model_manager.Init(1024, baka_swap.GetSwapchainLength(), device);
+
+        render_vk_command = VulkanCommand(
+            device, 
+            baka_swap.GetSwapchainLength(), 
+            queue_manager.GetQueueFamily(VulkanQueueType::QUEUE_TYPE_GRAPHICS)
+        );
 
         bakalog("baka graphics initialized");
         return true;
@@ -184,6 +199,8 @@ namespace baka
     void Graphics::Close()
     {
         bakalog("closing baka graphics");
+
+        render_vk_command.Free();
 
         if(logical_device_created)
         {

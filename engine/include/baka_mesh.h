@@ -17,14 +17,17 @@ namespace baka
         Vec2 texel;
     } Vertex;
 
-    typedef struct
-    {
-        uint32_t vertices[3];
-    } Face;
+    typedef uint32_t Face[3];
 
     class Mesh
     {
+    public:
+        void Load(const char *filename);
+        void Render();
 
+    public:
+        std::vector<Vertex> vertices;
+        std::vector<Face> indices;
     };
 
     class MeshManager
