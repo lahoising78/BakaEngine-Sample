@@ -31,8 +31,8 @@ namespace baka
     {
     public:
         void Init(uint32_t count);
-        const std::vector<VkVertexInputBindingDescription> GetBindingDescription() { return binding_description; }
-        const std::vector<VkVertexInputAttributeDescription> GetAttributeDescription() { return attribute_description; }
+        const std::vector<VkVertexInputBindingDescription> &GetBindingDescription() { return binding_description; }
+        const std::vector<VkVertexInputAttributeDescription> &GetAttributeDescription() { return attribute_description; }
 
     private:
         std::vector<Mesh> mesh_list;

@@ -56,6 +56,7 @@ namespace baka
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
         VkPipelineColorBlendStateCreateInfo colorBlend = {};
         VkPipelineLayoutCreateInfo pipeLayoutInfo = {};
+        VkGraphicsPipelineCreateInfo pipeCreateInfo = {};
         VkResult res;
 
         VulkanPipeline *pipe = VulkanPipelineNew();
@@ -194,6 +195,30 @@ namespace baka
             bakaerr("pipeline layout creation failed with error code %d", res);
             pipe->Free();
             return nullptr;
+        }
+
+        pipeCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipeCreateInfo.stageCount = shaderStages.size();
+        pipeCreateInfo.pStages = (VkPipelineShaderStageCreateInfo*)shaderStages.data();
+        pipeCreateInfo.pVertexInputState = &vertexInput;
+        pipeCreateInfo.pInputAssemblyState = &inputAssembly;
+        pipeCreateInfo.pViewportState = &viewportCreateInfo;
+        pipeCreateInfo.pRasterizationState = &rasterizerState;
+        pipeCreateInfo.pMultisampleState = &multisample;
+        pipeCreateInfo.pColorBlendState = &colorBlend;
+        pipeCreateInfo.pDynamicState = nullptr;
+        pipeCreateInfo.layout = pipe->pipeline_layout;
+        pipeCreateInfo.renderPass = pipe->render_pass;
+        pipeCreateInfo.subpass = 0;
+        pipeCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
+        pipeCreateInfo.basePipelineIndex = -1;
+        pipeCreateInfo.pDepthStencilState = &depthStencil;
+
+        res = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeCreateInfo, nullptr, &pipe->pipeline);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("pipeline creation failed with error code %d", res);
+            pipe->Free();
         }
 
         return pipe;
@@ -434,6 +459,11 @@ namespace baka
         if(descriptor_set_layout != VK_NULL_HANDLE)
         {
             vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
+        }
+
+        if(pipeline != VK_NULL_HANDLE)
+        {
+            vkDestroyPipeline(device, pipeline, nullptr);
         }
 
         if(pipeline_layout != VK_NULL_HANDLE)

@@ -44,6 +44,7 @@ namespace baka
         VkRenderPass render_pass;
 
         VkPipelineLayout pipeline_layout;
+        VkPipeline pipeline;
 
         bool inuse;
         friend class VulkanPipelineManager;
