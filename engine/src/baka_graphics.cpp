@@ -56,8 +56,8 @@ namespace baka
         baka_pipeline_manager.Init(4);
         pipe = baka_pipeline_manager.CreateBasicModel(
             device, 
-            "baka_engine/shaders/vert.sprv", 
-            "baka_engine/shaders/frag.sprv", 
+            "baka_engine/shaders/always_vert.sprv", 
+            "baka_engine/shaders/always_frag.sprv", 
             baka_swap.GetSwapchainExtent(), 
             1024
         );
@@ -73,7 +73,9 @@ namespace baka
         baka_swap.CreateDepthImage();
         baka_swap.CreateFramebuffers(pipe);
 
-        /* when we start rendering, we are going to need semaphores to tell the program when it is ok to continue */
+        /** 
+         * when we start rendering, we are going to need semaphores to tell the program when it is ok to continue 
+         * https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Rendering_and_presentation#page_Semaphores */
         CreateSemaphores();
 
         bakalog("baka graphics initialized");
