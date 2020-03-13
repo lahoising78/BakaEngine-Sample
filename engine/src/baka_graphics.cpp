@@ -27,8 +27,12 @@ namespace baka
     bool Graphics::logical_device_created;
     VulkanPipeline *Graphics::pipe;
     VulkanCommand Graphics::render_vk_command;
-    VkSemaphore Graphics::image_available_sem;
-    VkSemaphore Graphics::render_finished_sem;
+    std::vector<VkSemaphore> Graphics::image_available_sem;
+    std::vector<VkSemaphore> Graphics::render_finished_sem;
+    std::vector<VkFence> Graphics::in_flight_fences;
+    std::vector<VkFence> Graphics::images_in_flight;
+    int32_t Graphics::current_frame;
+    const uint32_t Graphics::max_frames_in_flight = 3;
 
     bool Graphics::Init( const char *windowName, int width, int height, bool validation )
     {
@@ -76,7 +80,7 @@ namespace baka
         /** 
          * when we start rendering, we are going to need semaphores to tell the program when it is ok to continue 
          * https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Rendering_and_presentation#page_Semaphores */
-        CreateSemaphores();
+        CreateSync();
 
         bakalog("baka graphics initialized");
         return true;
@@ -207,10 +211,24 @@ namespace baka
         return true;
     }
 
-    void Graphics::CreateSemaphores()
+    void Graphics::CreateSync()
     {
-        CreateSingleSemaphore(&image_available_sem);
-        CreateSingleSemaphore(&render_finished_sem);
+        uint32_t i;
+        bakalog("graphics create sync");
+
+        image_available_sem.resize(max_frames_in_flight);
+        render_finished_sem.resize(max_frames_in_flight);
+        in_flight_fences.resize(max_frames_in_flight);
+        images_in_flight.resize( baka_swap.GetSwapchainLength(), VK_NULL_HANDLE );
+        
+        for(i = 0; i < max_frames_in_flight; i++)
+        {
+            CreateSingleSemaphore(&image_available_sem[i]);
+            CreateSingleSemaphore(&render_finished_sem[i]);
+            CreateSingleFence(&in_flight_fences[i]);
+        }
+
+        current_frame = -1;
     }
 
     void Graphics::CreateSingleSemaphore(VkSemaphore *sem)
@@ -226,19 +244,42 @@ namespace baka
         }
     }
 
+    void Graphics::CreateSingleFence(VkFence *fence)
+    {
+        VkResult res;
+        VkFenceCreateInfo info = {};
+
+        info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        
+        res = vkCreateFence(device, &info, nullptr, fence);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("fence creation failed with error code %d", res);
+        }
+    }
+
     void Graphics::Close()
     {
         bakalog("closing baka graphics");
 
-        if(image_available_sem != VK_NULL_HANDLE)
+        for(uint32_t i = 0; i < max_frames_in_flight; i++)
         {
-            vkDestroySemaphore(device, image_available_sem, nullptr);
+            if(image_available_sem[i] != VK_NULL_HANDLE)
+            {
+                vkDestroySemaphore(device, image_available_sem[i], nullptr);
+            }
+
+            if(render_finished_sem[i] != VK_NULL_HANDLE)
+            {
+                vkDestroySemaphore(device, render_finished_sem[i], nullptr);
+            }
+
+            if(in_flight_fences[i] != VK_NULL_HANDLE)
+            {
+                vkDestroyFence(device, in_flight_fences[i], nullptr);
+            }
         }
 
-        if(render_finished_sem != VK_NULL_HANDLE)
-        {
-            vkDestroySemaphore(device, render_finished_sem, nullptr);
-        }
 
         render_vk_command.Free();
 
@@ -321,6 +362,114 @@ namespace baka
     VkDevice Graphics::GetDefaultLogicalDevice()
     {
         return device;
+    }
+
+    uint32_t Graphics::RenderBegin()
+    {
+        VkResult res;
+        uint32_t index = 0;
+
+        if(current_frame > -1)
+            vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
+        else
+            current_frame = 0;
+
+        /** 
+         * to start rendering, we need to get an image from the swapchain.
+         * this is done by using vkAcquireNextImageKHR */
+
+        vkAcquireNextImageKHR(
+            device, 
+            baka_swap.GetSwapchain(),
+            /* this is a timeout in nanoseconds for an image to become avilable.
+            setting it to UIT64_MAX turns off the timeout */
+            UINT64_MAX,
+            /* set semaphore signal when we are done using image */
+            image_available_sem[current_frame],
+            VK_NULL_HANDLE,
+            /* index of image */
+            &index
+        );
+
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        res = vkBeginCommandBuffer(render_vk_command.command_buffers[index], &beginInfo);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("error intializing command buffer");
+        }
+
+        VkRenderPassBeginInfo renderPassInfo = {};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = pipe->GetRenderPass();
+        renderPassInfo.framebuffer = baka_swap.GetFramebuffer(index);
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = baka_swap.GetSwapchainExtent();
+
+        VkClearValue clearval = {0.0f, 0.0f, 1.0f, 1.0f};
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearval;
+
+        vkCmdBeginRenderPass(render_vk_command.command_buffers[index], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(render_vk_command.command_buffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, pipe->pipeline);
+        vkCmdDraw(render_vk_command.command_buffers[index], 3, 1, 0, 0);
+
+        return index;
+    }
+
+    void Graphics::RenderEnd(uint32_t frame)
+    {
+        VkResult res;
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        VkSemaphore sign[] = {render_finished_sem[current_frame]};
+
+        vkCmdEndRenderPass(render_vk_command.command_buffers[frame]);
+        vkEndCommandBuffer(render_vk_command.command_buffers[frame]);
+
+        if(images_in_flight[frame] != VK_NULL_HANDLE)
+        {
+            vkWaitForFences(device, 1, &images_in_flight[frame], VK_TRUE, UINT64_MAX);
+        }
+        images_in_flight[frame] = in_flight_fences[current_frame];
+
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = &image_available_sem[current_frame];
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = render_vk_command.command_buffers.data() + frame;
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = sign;
+
+        vkResetFences(device, 1, in_flight_fences.data() + current_frame);
+
+        res = vkQueueSubmit(queue_manager.GetQueue(QUEUE_TYPE_GRAPHICS), 1, &submitInfo, in_flight_fences[current_frame]);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("draw command submit failed");
+            return;
+        }
+
+        VkSwapchainKHR swaps[] = {baka_swap.GetSwapchain()};
+        VkPresentInfoKHR presentInfo = {};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.pWaitSemaphores = sign;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swaps;
+        presentInfo.pImageIndices = &frame;
+
+        res = vkQueuePresentKHR(queue_manager.GetQueue(QUEUE_TYPE_PRESENT), &presentInfo);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("unable to present frame");
+            return;
+        }
+
+        current_frame = (current_frame + 1) % max_frames_in_flight;
     }
     
     /* VULKAN DEBUG */

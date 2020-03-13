@@ -29,6 +29,7 @@ namespace baka
         void SetupRenderPass();
 
         VkFormat FindSupportedFormat(std::vector<VkFormat> candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        friend class Graphics;
 
     private:
         VkDevice device;

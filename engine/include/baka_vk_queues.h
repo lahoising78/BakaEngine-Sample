@@ -35,6 +35,7 @@ namespace baka
         const VkDeviceQueueCreateInfo *GetCreateInfo(uint32_t *count);
         void SetupDeviceQueues(VkDevice device);
 
+        VkQueue GetQueue( VulkanQueueType qType );
         int32_t GetQueueFamily( VulkanQueueType qType );
 
     private:

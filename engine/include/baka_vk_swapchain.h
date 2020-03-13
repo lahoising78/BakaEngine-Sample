@@ -18,6 +18,7 @@ namespace baka
         uint32_t GetSwapchainLength() {return swapchain_count;}
         VkExtent2D GetSwapchainExtent() {return extent;}
         VkSurfaceFormatKHR GetChosenFormat() { return formats[chosen_format]; }
+        VkFramebuffer GetFramebuffer(uint32_t frame) { if(frame < framebuffers.size()) return framebuffers[frame]; return VK_NULL_HANDLE; }
 
     private:
         uint32_t ChooseFormat();

@@ -17,6 +17,7 @@ namespace baka
         VkCommandPool command_pool;
         std::vector<VkCommandBuffer> command_buffers;
         VkDevice device;
+        friend class Graphics;
     };
 }
 

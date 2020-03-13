@@ -92,6 +92,17 @@ namespace baka
         }
     }
 
+    VkQueue VulkanQueueManager::GetQueue( VulkanQueueType qType )
+    {
+        switch (qType)
+        {
+        case QUEUE_TYPE_GRAPHICS: return graphics_queue.queue; break;
+        case QUEUE_TYPE_PRESENT: return present_queue.queue; break;
+        case QUEUE_TYPE_TRANSFER: return transfer_queue.queue; break;
+        default: return VK_NULL_HANDLE; break;
+        }
+    }
+
     int32_t VulkanQueueManager::GetQueueFamily( VulkanQueueType pType )
     {
         switch (pType)
