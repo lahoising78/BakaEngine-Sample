@@ -53,9 +53,13 @@ namespace baka
 
     void VulkanCommand::Free()
     {
+        if(command_buffers.size() > 0 && command_buffers[0] != VK_NULL_HANDLE)
+            vkFreeCommandBuffers(device, command_pool, command_buffers.size(), command_buffers.data());
+        
         if(command_pool != VK_NULL_HANDLE)
         {
             vkDestroyCommandPool(device, command_pool, nullptr);
         }
+
     }
 }

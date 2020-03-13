@@ -41,5 +41,7 @@ int main(int argc, char *argv[])
 
     bakalog("--==== End of application ====--");
 
+    vkDeviceWaitIdle(baka::Graphics::GetDefaultLogicalDevice());
+
     return 0;
 }

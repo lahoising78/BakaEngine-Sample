@@ -55,12 +55,12 @@ namespace baka{
         static VkDevice device;
         static bool logical_device_created;
         static VulkanPipeline *pipe;
-        static std::vector<VkSemaphore> image_available_sem;
-        static std::vector<VkSemaphore> render_finished_sem;
-        static std::vector<VkFence> in_flight_fences;
-        static std::vector<VkFence> images_in_flight;
-        static const uint32_t max_frames_in_flight;
-        static int32_t current_frame;
+        // static VkSemaphore graphs_sem;
+        static VkSemaphore render_complete;
+        static VkSemaphore present_complete;
+        static std::vector<VkFence> wait_fences;
+        static VkCommandBuffer current_cmd;
+        static uint32_t current_cmd_index;
         static VulkanCommand render_vk_command;
     };
 }
