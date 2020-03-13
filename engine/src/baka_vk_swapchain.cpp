@@ -322,8 +322,8 @@ namespace baka
         uint32_t i;
         if(!pipe) return;
 
-        framebuffers.resize(swapchain_count);
-        for(i = 0; i < swapchain_count; i++)
+        framebuffers.resize(image_views.size());
+        for(i = 0; i < image_views.size(); i++)
         {
             std::vector<VkImageView> views = {image_views[i], depth_image_view};
             CreateSingleFramebuffer(pipe, views, &framebuffers[i]);

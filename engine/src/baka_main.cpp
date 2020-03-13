@@ -8,7 +8,6 @@ int main(int argc, char *argv[])
 {
     bool running = false;
     bool validation = true;
-    uint32_t frame = 0;
     bakalog("--==== Start of application ====--");
 
     running = baka::Graphics::Init("Baka Engine", 1280, 720, validation);
@@ -32,11 +31,8 @@ int main(int argc, char *argv[])
 
         BakaUpdate(0.0f);
 
-        bakalog("before begin");
-        frame = baka::Graphics::RenderBegin();
-        bakalog("middle");
-        baka::Graphics::RenderEnd(frame);
-        bakalog("after begin");
+        baka::Graphics::RenderBegin();
+        baka::Graphics::RenderEnd();
     }
 
     bakalog("--==== End of application ====--");

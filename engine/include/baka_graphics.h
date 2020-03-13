@@ -17,7 +17,7 @@ namespace baka{
         static VkPhysicalDevice GetDefaultPhysicalDevice() { return gpu; }
         static VulkanPipeline *GetDefaultPipeline() { return pipe; }
         static uint32_t RenderBegin();
-        static void RenderEnd(uint32_t frame);
+        static void RenderEnd();
 
     private:
         static bool Setup( const char *windowName, int width, int height );
@@ -55,12 +55,9 @@ namespace baka{
         static VkDevice device;
         static bool logical_device_created;
         static VulkanPipeline *pipe;
-        // static VkSemaphore graphs_sem;
+        static uint32_t current_cmd_bf;
         static VkSemaphore render_complete;
         static VkSemaphore present_complete;
-        static std::vector<VkFence> wait_fences;
-        static VkCommandBuffer current_cmd;
-        static uint32_t current_cmd_index;
         static VulkanCommand render_vk_command;
     };
 }

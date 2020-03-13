@@ -22,7 +22,8 @@ namespace baka
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.queueFamilyIndex = queueFamIndex;
         /* for now */
-        poolInfo.flags = 0;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        // poolInfo.flags = 0;
 
         res = vkCreateCommandPool(device, &poolInfo, nullptr, &command_pool);
         if(res != VK_SUCCESS)
@@ -46,13 +47,98 @@ namespace baka
         {
             bakaerr("command buffer allocation failed with error code %d", res);
             Free();
+            return;
         }
+
+        VkFenceCreateInfo fenceInfo = {};
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        // fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        fences.resize(bufferCount);
+        for(auto &f : fences)
+        {
+            VkResult res;
+            res = vkCreateFence(device, &fenceInfo, nullptr, &f);
+            if(res != VK_SUCCESS)
+            {
+                bakaerr("command buffer fence creation failed");
+            }
+        }
+
+        buffer_submitted.resize(bufferCount, false);
+        current_buf = 0;
 
         bakalog("created command pool and buffers");
     }
 
+    void VulkanCommand::WaitFence()
+    {
+        VkResult res;
+        if( buffer_submitted[current_buf] )
+        {
+            res = vkWaitForFences( device, 1, &fences[current_buf], VK_TRUE, UINT64_MAX );
+            if(res != VK_SUCCESS)
+            {
+                bakawarn("wait for fence error code %d", res);
+            }
+            buffer_submitted[current_buf] = false;
+        }
+        vkResetFences(device, 1, &fences[current_buf]);
+        if(res != VK_SUCCESS)
+        {
+            bakawarn("fence reset error %d", res);
+        }
+    }
+
+    VkResult VulkanCommand::BeginCmdBuffer()
+    {
+        VkResult res;
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        WaitFence();
+
+        res = vkBeginCommandBuffer(command_buffers[current_buf], &beginInfo);
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("error intializing command buffer");
+        }
+
+        return res;
+    }
+
+    VkResult VulkanCommand::SubmitQueue( VkQueue queue, std::vector<VkSubmitInfo> &submitInfo, bool wait_fence )
+    {
+        VkResult res;
+
+        if(wait_fence)
+        {
+            res = vkQueueSubmit(queue,submitInfo.size(), submitInfo.data(), fences[current_buf]);
+            buffer_submitted[current_buf] = true;
+        }
+        else
+        {
+            res = vkQueueSubmit(queue, submitInfo.size(), submitInfo.data(), VK_NULL_HANDLE);
+        }
+
+        if(res !=VK_SUCCESS)
+        {
+            bakaerr("queue submition failed with error code %d", res);
+        }
+
+        return res;
+    }
+
     void VulkanCommand::Free()
     {
+        for(auto &f : fences)
+        {
+            if(f != VK_NULL_HANDLE)
+            {
+                vkDestroyFence(device, f, nullptr);
+            }
+        }
+
         if(command_buffers.size() > 0 && command_buffers[0] != VK_NULL_HANDLE)
             vkFreeCommandBuffers(device, command_pool, command_buffers.size(), command_buffers.data());
         
