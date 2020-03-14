@@ -73,6 +73,9 @@ namespace baka
     void VulkanCommand::WaitFence()
     {
         VkResult res;
+        /* when you submit things to the queue for presentation and stuff, they perform those jobs asynchronously.
+        before we can work with the command buffers, we must make sure that it is not currently being use.
+        we do this by setting fences. these are signals that we can set and wait for */
         if( buffer_submitted[current_buf] )
         {
             res = vkWaitForFences( device, 1, &fences[current_buf], VK_TRUE, UINT64_MAX );
@@ -82,13 +85,16 @@ namespace baka
             }
             buffer_submitted[current_buf] = false;
         }
-        vkResetFences(device, 1, &fences[current_buf]);
+
+        /* after you wait for the fences, you must manually put them back to the non-signaled state */
+        res = vkResetFences(device, 1, &fences[current_buf]);
         if(res != VK_SUCCESS)
         {
             bakawarn("fence reset error %d", res);
         }
     }
 
+    /* start recording command so we can pass them to the queue in the end */
     VkResult VulkanCommand::BeginCmdBuffer()
     {
         VkResult res;
@@ -98,6 +104,7 @@ namespace baka
 
         WaitFence();
 
+        /* begin recording */
         res = vkBeginCommandBuffer(command_buffers[current_buf], &beginInfo);
         if(res != VK_SUCCESS)
         {
@@ -111,8 +118,10 @@ namespace baka
     {
         VkResult res;
 
+        /* submit command buffer to the queue */
         if(wait_fence)
         {
+            /* the fence is the fence that we want to notify of the completion */
             res = vkQueueSubmit(queue,submitInfo.size(), submitInfo.data(), fences[current_buf]);
             buffer_submitted[current_buf] = true;
         }

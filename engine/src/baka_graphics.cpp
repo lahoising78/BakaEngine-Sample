@@ -57,10 +57,10 @@ namespace baka
         baka_pipeline_manager.Init(4);
         pipe = baka_pipeline_manager.CreateBasicModel(
             device, 
-            "baka_engine/shaders/always_vert.sprv", 
-            "baka_engine/shaders/always_frag.sprv", 
-            // "baka_engine/shaders/default_vert.sprv", 
-            // "baka_engine/shaders/default_frag.sprv", 
+            // "baka_engine/shaders/always_vert.sprv", 
+            // "baka_engine/shaders/always_frag.sprv", 
+            "baka_engine/shaders/default_vert.sprv", 
+            "baka_engine/shaders/default_frag.sprv", 
             baka_swap.GetSwapchainExtent(), 
             1024
         );
@@ -365,6 +365,8 @@ namespace baka
         );
 
         render_vk_command.SetCurrentCmdBuffer(current_cmd_bf);
+
+        /* to render in vulkan you must recond commands through a queue */
         render_vk_command.BeginCmdBuffer();
 
         VkRenderPassBeginInfo renderPassInfo = {};
@@ -374,7 +376,7 @@ namespace baka
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = baka_swap.GetSwapchainExtent();
 
-        VkClearValue clearval = {0.0f, 0.0f, 1.0f, 1.0f};
+        VkClearValue clearval = {0.0f, 0.0f, 0.0f, 1.0f};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearval;
 
