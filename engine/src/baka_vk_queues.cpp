@@ -33,21 +33,21 @@ namespace baka
         {
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &supported);
 
-            if( queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT )
+            if( queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT && graphics_queue.family == -1 )
             {
                 graphics_queue.family = i;
                 graphics_queue.priority = 1.0f;
                 bakalog("queue %u handles graphics", i);
             }
 
-            if( queue_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT )
+            if( queue_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT && transfer_queue.family == -1 )
             {
                 transfer_queue.family = i;
                 transfer_queue.priority = 1.0f;
                 bakalog("queue %u handles transfer", i);
             }
 
-            if( supported )
+            if( supported && present_queue.family == -1 )
             {
                 present_queue.family = i;
                 present_queue.priority = 1.0f;

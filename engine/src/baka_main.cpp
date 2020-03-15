@@ -13,6 +13,15 @@ int main(int argc, char *argv[])
     baka::Timer frames;
     bakalog("--==== Start of application ====--");
 
+    for(int i = 1; i < argc; i++)
+    {
+        if( strcmp(argv[i], "-nv") == 0 )
+        {
+            bakawarn("turn off validation");
+            validation = false;
+        }
+    }
+
     running = baka::Graphics::Init("Baka Engine", 1280, 720, validation);
 
     if(running)
