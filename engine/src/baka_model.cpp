@@ -30,7 +30,9 @@ namespace baka
 
     void Model::Render(Matrix4 mat)
     {
-        mesh->Render(mat);
+        VkCommandBuffer cmd = Graphics::GetCurrentCommandBuffer();
+        texture->BindDescriptorSet( cmd, Graphics::GetDefaultPipeline()->GetDescriptorSet() );
+        mesh->Render(mat, cmd);
     }
 
 }

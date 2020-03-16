@@ -322,6 +322,30 @@ namespace baka
         {
             bakaerr("descriptor set allocation failed with error code %d", res);
         }
+
+        descriptor_set_pointer.resize( descriptor_pool.size() );
+    }
+
+    VkDescriptorSet VulkanPipeline::GetDescriptorSet( uint32_t set_id )
+    {
+        if(set_id > descriptor_set_pointer.size())
+        {
+            bakawarn("descriptor set pointer id %u is out of range", set_id);
+            return VK_NULL_HANDLE;
+        }
+
+        if( descriptor_set_pointer[set_id] > descriptor_sets.size() )
+        {
+            bakawarn("no more descriptor sets available");
+            return VK_NULL_HANDLE;
+        }
+
+        return descriptor_sets[ descriptor_set_pointer[set_id]++ ];
+    }
+
+    void VulkanPipeline::ResetDescriptorSetPointers()
+    {
+        memset(descriptor_set_pointer.data(), 0, sizeof(uint32_t) * descriptor_set_pointer.size());
     }
 
     /** 

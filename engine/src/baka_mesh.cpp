@@ -47,10 +47,8 @@ namespace baka
         // write_descriptor_set.descriptorCount = 1;
     }
 
-    void Mesh::Render(Matrix4 mat)
+    void Mesh::Render(Matrix4 mat, VkCommandBuffer cmd)
     {
-        VkCommandBuffer cmd = Graphics::GetCurrentCommandBuffer();
-
         vkCmdPushConstants(
             cmd, baka_mesh.GetPipeLayout(),
             VK_SHADER_STAGE_VERTEX_BIT,

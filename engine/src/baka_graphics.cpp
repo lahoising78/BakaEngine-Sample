@@ -437,6 +437,8 @@ namespace baka
             bakaerr("unable to present frame");
             return;
         }
+
+        pipe->ResetDescriptorSetPointers();
     }
     
     /* VULKAN DEBUG */

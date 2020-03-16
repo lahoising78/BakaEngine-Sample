@@ -11,6 +11,8 @@ namespace baka
     class Texture
     {
     friend class Model;
+    private:
+        void BindDescriptorSet(VkCommandBuffer cmd, VkDescriptorSet set);
 
     private:
         VkImageView image_view;
@@ -21,12 +23,18 @@ namespace baka
 
     class TextureManager
     {
+    friend class Graphics;
     public:
-        void Init(uint32_t count);
         Texture *Load(const char *filename) { return nullptr; }
+        VkPipelineLayout GetPipelineLayout() { return pipe_layout; }
+        
+    private:
+        void Init(uint32_t count);
+        void SetPipelineLayout(VkPipelineLayout layout) { pipe_layout = layout; }
     
     private:
         std::vector<Texture> texture_list;
+        VkPipelineLayout pipe_layout;
         VkDevice device;
     };
 

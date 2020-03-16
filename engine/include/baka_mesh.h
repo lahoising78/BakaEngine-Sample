@@ -36,7 +36,7 @@ namespace baka
     friend class Model;
 
     public:
-        void Render(Matrix4 mat);
+        void Render(Matrix4 mat, VkCommandBuffer cmd);
 
     private:
         std::vector<Vertex> vertices;
@@ -49,6 +49,8 @@ namespace baka
 
     class MeshManager
     {
+    friend class Graphics;
+
     public:
         void Init(uint32_t count);
         const std::vector<VkVertexInputBindingDescription> &GetBindingDescription() { return binding_description; }
@@ -57,8 +59,10 @@ namespace baka
         size_t GetPushConstantSize() { return MESH_PUSH_CONST_SIZE; }
         Mesh *Load(const char *filename, MeshFileType fileType) { return nullptr; }
         Mesh *Load(std::vector<Vertex> vertices, const char *name) { return nullptr; }
-        void SetPipeLayout(VkPipelineLayout layout) { this->layout = layout; } 
         VkPipelineLayout GetPipeLayout() { return layout; }
+        
+    private:
+        void SetPipeLayout(VkPipelineLayout layout) { this->layout = layout; } 
 
     private:
         std::vector<Mesh> mesh_list;

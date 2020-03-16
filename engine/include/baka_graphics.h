@@ -13,7 +13,7 @@ namespace baka{
 
     class Graphics
     {
-    friend class Mesh;
+    friend class Model;
 
     public:
         static bool Init(  );

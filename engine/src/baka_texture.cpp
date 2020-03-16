@@ -17,4 +17,14 @@ namespace baka
         baka_texture_manager.texture_list.resize(count);
         device = Graphics::GetDefaultLogicalDevice();
     }
+
+    void Texture::BindDescriptorSet(VkCommandBuffer cmd, VkDescriptorSet set)
+    {
+        vkCmdBindDescriptorSets(
+            cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 
+            baka_texture_manager.GetPipelineLayout(),
+            0, 1, &set,
+            0, nullptr
+        );
+    }
 }
