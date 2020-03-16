@@ -16,7 +16,7 @@ namespace baka{
     friend class Mesh;
 
     public:
-        static bool Init( const char *windowName, int width, int height, bool validation );
+        static bool Init(  );
         static VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
         static VkDevice GetDefaultLogicalDevice();
         static VkPhysicalDevice GetDefaultPhysicalDevice() { return gpu; }

@@ -8,21 +8,11 @@
 int main(int argc, char *argv[])
 {
     bool running = false;
-    bool validation = true;
     uint32_t fps = 0;
     baka::Timer frames;
     bakalog("--==== Start of application ====--");
 
-    for(int i = 1; i < argc; i++)
-    {
-        if( strcmp(argv[i], "-nv") == 0 )
-        {
-            bakawarn("turn off validation");
-            validation = false;
-        }
-    }
-
-    running = baka::Graphics::Init("Baka Engine", 1280, 720, validation);
+    running = baka::Graphics::Init();
 
     if(running)
     {

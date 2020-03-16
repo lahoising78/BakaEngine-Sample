@@ -8,6 +8,7 @@
 #include "baka_texture.h"
 #include "baka_vk_pipeline.h"
 #include "baka_model.h"
+#include "baka_config.h"
 #include <SDL2/SDL_vulkan.h>
 
 namespace baka
@@ -31,8 +32,11 @@ namespace baka
     uint32_t Graphics::current_cmd_bf;
     VulkanCommand Graphics::render_vk_command;
 
-    bool Graphics::Init( const char *windowName, int width, int height, bool validation )
+    bool Graphics::Init(  )
     {
+        bool validation;
+        int width, height;
+
         if(SDL_Init( SDL_INIT_EVERYTHING ) != 0)
         {
             bakaerr("Failed to initialize SDL");
@@ -40,8 +44,14 @@ namespace baka
         }
         atexit(SDL_Quit);
 
+        baka_config = BakaConfig();
+
+        validation = baka_config.GetValidation();
+        width = baka_config.GetWindowWidth();
+        height = baka_config.GetWindowHeight();
+
         Graphics::validation = validation;
-        if(!Graphics::Setup(windowName, width, height))
+        if(!Graphics::Setup(baka_config.GetAppName(), width, height))
         {
             return false;
         }
@@ -377,7 +387,7 @@ namespace baka
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = baka_swap.GetSwapchainExtent();
 
-        VkClearValue clearval = {0.0f, 0.0f, 0.0f, 1.0f};
+        VkClearValue clearval = {0.8f, 0.4f, 0.4f, 1.0f};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearval;
 
