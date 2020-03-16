@@ -23,7 +23,8 @@ namespace baka
     public:
         VkFormat FindDepthFormat();
         VkRenderPass GetRenderPass() {return render_pass;}
-        VkDescriptorSet GetDescriptorSet( uint32_t set_id = 0 );
+        VkDescriptorSet GetDescriptorSet( uint32_t *id );
+        void ReturnDescriptorSet(uint32_t id);
 
     private:
         void Free();
@@ -49,7 +50,7 @@ namespace baka
         VkDescriptorSetLayout descriptor_set_layout;
         std::vector<VkDescriptorPool> descriptor_pool;
         std::vector<VkDescriptorSet> descriptor_sets;
-        std::vector<uint32_t> descriptor_set_pointer;
+        std::vector<bool> descriptor_in_use;
 
         VkRenderPass render_pass;
 

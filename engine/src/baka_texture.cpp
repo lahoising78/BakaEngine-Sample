@@ -18,12 +18,12 @@ namespace baka
         device = Graphics::GetDefaultLogicalDevice();
     }
 
-    void Texture::BindDescriptorSet(VkCommandBuffer cmd, VkDescriptorSet set)
+    void Texture::BindDescriptorSet(VkCommandBuffer cmd)
     {
         vkCmdBindDescriptorSets(
             cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 
             baka_texture_manager.GetPipelineLayout(),
-            0, 1, &set,
+            0, 1, &descriptor_set,
             0, nullptr
         );
     }

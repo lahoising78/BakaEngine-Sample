@@ -31,7 +31,7 @@ namespace baka
     void Model::Render(Matrix4 mat)
     {
         VkCommandBuffer cmd = Graphics::GetCurrentCommandBuffer();
-        texture->BindDescriptorSet( cmd, Graphics::GetDefaultPipeline()->GetDescriptorSet() );
+        texture->BindDescriptorSet( cmd );
         mesh->Render(mat, cmd);
     }
 

@@ -12,12 +12,14 @@ namespace baka
     {
     friend class Model;
     private:
-        void BindDescriptorSet(VkCommandBuffer cmd, VkDescriptorSet set);
+        void BindDescriptorSet(VkCommandBuffer cmd);
 
     private:
         VkImageView image_view;
         VkSampler image_sampler;
         const char *texture_name;
+        VkDescriptorSet descriptor_set;
+        uint32_t descriptor_set_id;
 
     };
 
