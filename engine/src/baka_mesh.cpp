@@ -1,5 +1,6 @@
 #include "baka_logger.h"
 #include "baka_mesh.h"
+#include "baka_vk_pipeline.h"
 
 namespace baka
 {
@@ -36,5 +37,12 @@ namespace baka
         attribute_description[2].location = 2;
         attribute_description[2].format = VK_FORMAT_R32G32_SFLOAT;
         attribute_description[2].offset = offsetof(Vertex, texel);
+
+        write_descriptor_set = {};
+        // write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        // write_descriptor_set.dstBinding = DESCRIPTOR_UBO_BINDING;
+        // write_descriptor_set.dstArrayElement = 0;
+        // write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        // write_descriptor_set.descriptorCount = 1;
     }
 }

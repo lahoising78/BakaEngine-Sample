@@ -3,6 +3,8 @@
 
 #include "baka_vk_pipeline.h"
 #include "baka_mesh.h"
+#include "baka_texture.h"
+#include "baka_matrix.h"
 #include <vector>
 
 namespace baka
@@ -10,7 +12,17 @@ namespace baka
     class Model
     {
     public:
-        Mesh mesh;
+        Model() {}
+        Model(Mesh *mesh, Texture *texture);
+        Model(Mesh *mesh, const char *texturefile);
+        Model(const char *meshfile, Texture *texture);
+        Model(const char *meshfile, const char *texturefile);
+        void Render(Matrix4 mat);
+
+    private:
+        Mesh *mesh;
+        Texture *texture;
+    
     };
 
     class ModelManager

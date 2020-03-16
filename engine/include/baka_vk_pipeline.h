@@ -4,6 +4,9 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
+#define DESCRIPTOR_UBO_BINDING 0
+#define DESCRIPTOR_SAMPLER_BINDING 0
+
 #define MANAGER_NEW(type,manager,var) type *manager::type##New() {\
     for(uint32_t i = 0; i < var.size(); i++) {\
         if(var[i].inuse) continue; var[i].inuse = true; return &var[i];\

@@ -178,14 +178,19 @@ namespace baka
         pipe->CreateDescriptorSetLayout();
         pipe->CreateDescriptorSets();
 
+        VkPushConstantRange pushConst = {};
+        pushConst.offset = 0;
+        pushConst.size = baka_mesh.GetPushConstantSize();
+        pushConst.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
         pipeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeLayoutInfo.setLayoutCount = 1;
         pipeLayoutInfo.pSetLayouts = &pipe->descriptor_set_layout;
         /* push constants: https://stackoverflow.com/questions/50956414/what-is-a-push-constant-in-vulkan
         basically these allow us to pass data to the shaders faster than ubo's, however the amount of data you can send is limited
         and varies depending on the hardware */
-        pipeLayoutInfo.pushConstantRangeCount = 0;
-        pipeLayoutInfo.pPushConstantRanges = nullptr;
+        pipeLayoutInfo.pushConstantRangeCount = 1;
+        pipeLayoutInfo.pPushConstantRanges = &pushConst;
 
         pipe->SetupRenderPass();
 
@@ -231,14 +236,15 @@ namespace baka
     void VulkanPipeline::CreateDescriptorSetPool()
     {
         VkDescriptorPoolCreateInfo createInfo = {};
-        std::vector<VkDescriptorPoolSize> poolSizes(2);
+        std::vector<VkDescriptorPoolSize> poolSizes;
         VkResult res;
 
         /* pool sizes describe how many descriptors we will need in total for each type of descriptor set */
-        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSizes[0].descriptorCount = descriptor_set_count;
-        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[1].descriptorCount = descriptor_set_count;
+        // poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        // poolSizes[0].descriptorCount = descriptor_set_count;
+        poolSizes.push_back({});
+        poolSizes[DESCRIPTOR_SAMPLER_BINDING].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[DESCRIPTOR_SAMPLER_BINDING].descriptorCount = descriptor_set_count;
 
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         /* max sets is the total amount of descriptor sets we can allocate from pool */
@@ -263,27 +269,27 @@ namespace baka
 
     void VulkanPipeline::CreateDescriptorSetLayout()
     {
-        std::vector<VkDescriptorSetLayoutBinding> layoutBindings(2);
+        std::vector<VkDescriptorSetLayoutBinding> layoutBindings(1);
         VkDescriptorSetLayoutCreateInfo createInfo = {};
         VkResult res;
 
-        /* ubo is a buffer that contains any information you want */
-        layoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;   
-        layoutBindings[0].binding = 0;
-        /** @note can use multiple ubo's for skeletal animation. 
-        each bone would contain a ubo */
-        layoutBindings[0].descriptorCount = 1;                                  
-        /* can use this to set target stage */
-        layoutBindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        layoutBindings[0].pImmutableSamplers = nullptr;
+        // /* ubo is a buffer that contains any information you want */
+        // layoutBindings[DESCRIPTOR_UBO_BINDING].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;   
+        // layoutBindings[DESCRIPTOR_UBO_BINDING].binding = 0;
+        // /** @note can use multiple ubo's for skeletal animation. 
+        // each bone would contain a ubo */
+        // layoutBindings[DESCRIPTOR_UBO_BINDING].descriptorCount = 1;                                  
+        // /* can use this to set target stage */
+        // layoutBindings[DESCRIPTOR_UBO_BINDING].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        // layoutBindings[DESCRIPTOR_UBO_BINDING].pImmutableSamplers = nullptr;
 
         /* this is what gets the texture to the shader */ 
-        layoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        layoutBindings[1].binding = 1;
-        layoutBindings[1].descriptorCount = 1;
-        layoutBindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        layoutBindings[DESCRIPTOR_SAMPLER_BINDING].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        layoutBindings[DESCRIPTOR_SAMPLER_BINDING].binding = 1;
+        layoutBindings[DESCRIPTOR_SAMPLER_BINDING].descriptorCount = 1;
+        layoutBindings[DESCRIPTOR_SAMPLER_BINDING].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         /* set this to point to an array of samplers if you want to permanently bind the vk sampler to the layout */
-        layoutBindings[1].pImmutableSamplers = nullptr;
+        layoutBindings[DESCRIPTOR_SAMPLER_BINDING].pImmutableSamplers = nullptr;
 
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         createInfo.bindingCount = layoutBindings.size();
@@ -440,7 +446,7 @@ namespace baka
     VkFormat VulkanPipeline::FindDepthFormat()
     {
         /* D stands for depth */
-        std::vector<VkFormat> format = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
+        std::vector<VkFormat> format = { VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT };
         return FindSupportedFormat(
             format,
             VK_IMAGE_TILING_OPTIMAL,

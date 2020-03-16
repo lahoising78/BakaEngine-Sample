@@ -6,8 +6,16 @@
 
 namespace baka
 {
+    class Model;
+
     class Texture
     {
+    friend class Model;
+
+    private:
+        VkImageView image_view;
+        VkSampler image_sampler;
+        const char *texture_name;
 
     };
 
@@ -15,6 +23,7 @@ namespace baka
     {
     public:
         void Init(uint32_t count);
+        Texture *Load(const char *filename) { return nullptr; }
     
     private:
         std::vector<Texture> texture_list;
