@@ -14,6 +14,7 @@
 namespace baka
 {
     class Model;
+    class MeshManager;
 
     enum MeshFileType
     {
@@ -29,22 +30,32 @@ namespace baka
         Vec2 texel;
     } Vertex;
 
-    typedef uint32_t Face[3];
-
     class Mesh
     {
     friend class Model;
+    friend class MeshManager;
 
     public:
+        ~Mesh();
         void Render(Matrix4 mat, VkCommandBuffer cmd);
+        void Free();
+
+    private:
+        void Setup(std::vector<Vertex> vertices, std::vector<uint32_t> indices);
+        void CreateVertexBuffer();
+        void CreateIndexBuffer();
 
     private:
         std::vector<Vertex> vertices;
-        std::vector<Face> indices;
-        const char* name;
+        std::vector<uint32_t> indices;
+        std::string name;
 
         VkBuffer vertex_buffer;
+        VkDeviceMemory vertex_buffer_memory;
         VkBuffer index_buffer;
+        VkDeviceMemory index_buffer_memory;
+
+        bool inuse;
     };
 
     class MeshManager
@@ -58,11 +69,12 @@ namespace baka
         VkWriteDescriptorSet GetWriteDescriptor() { return write_descriptor_set; }
         size_t GetPushConstantSize() { return MESH_PUSH_CONST_SIZE; }
         Mesh *Load(const char *filename, MeshFileType fileType) { return nullptr; }
-        Mesh *Load(std::vector<Vertex> vertices, const char *name) { return nullptr; }
+        Mesh *Load(std::vector<Vertex> vertices, std::vector<uint32_t> faces, const char *name);
         VkPipelineLayout GetPipeLayout() { return layout; }
         
     private:
         void SetPipeLayout(VkPipelineLayout layout) { this->layout = layout; } 
+        Mesh *MeshNew();
 
     private:
         std::vector<Mesh> mesh_list;

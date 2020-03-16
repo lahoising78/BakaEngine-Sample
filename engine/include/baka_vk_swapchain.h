@@ -27,7 +27,6 @@ namespace baka
         VkExtent2D ConfigureExtent(uint32_t width, uint32_t height);
         void Create(VkDevice device, VkSurfaceKHR surface);
         bool CreateImage(uint32_t w, uint32_t h, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage* image, VkDeviceMemory* imageMemory);
-        uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         void CreateSingleFramebuffer( VulkanPipeline *pipe, std::vector<VkImageView> &views, VkFramebuffer *dst );
 
     private:

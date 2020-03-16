@@ -9,6 +9,7 @@
 #include "baka_vk_pipeline.h"
 #include "baka_model.h"
 #include "baka_config.h"
+#include "baka_vk_utils.h"
 #include <SDL2/SDL_vulkan.h>
 
 namespace baka
@@ -217,6 +218,8 @@ namespace baka
             return false;
         }
         logical_device_created = true;
+
+        SetupUtils(gpu, device);
         
         return true;
     }

@@ -2,6 +2,7 @@
 #include "baka_mesh.h"
 #include "baka_vk_pipeline.h"
 #include "baka_graphics.h"
+#include "baka_vk_utils.h"
 
 namespace baka
 {
@@ -47,6 +48,89 @@ namespace baka
         // write_descriptor_set.descriptorCount = 1;
     }
 
+    MANAGER_NEW(Mesh, MeshManager, mesh_list)
+
+    Mesh *MeshManager::Load(std::vector<Vertex> vertices, std::vector<uint32_t> faces, const char *name)
+    {
+        Mesh *mesh = nullptr;
+
+        if(name_to_mesh[name]) return name_to_mesh[name];
+        
+        mesh = MeshNew();
+        if(!mesh)
+        {
+            bakawarn("no more meshes available");
+            return nullptr;
+        }
+        name_to_mesh[name] = mesh;
+        mesh->name = name;
+
+        return mesh;
+    }
+
+    Mesh::~Mesh()
+    {
+        Free();
+    }
+
+    void Mesh::Free()
+    {
+        VkDevice device = Graphics::GetDefaultLogicalDevice();
+
+        if(vertex_buffer != VK_NULL_HANDLE)
+        {
+            vkDestroyBuffer(device, vertex_buffer, nullptr);
+        }
+
+        if(index_buffer != VK_NULL_HANDLE)
+        {
+            vkDestroyBuffer(device, index_buffer, nullptr);
+        }
+
+        inuse = false;
+    }
+
+    void Mesh::Setup(std::vector<Vertex> vertices, std::vector<uint32_t> indices)
+    {
+        this->vertices = vertices;
+        this->indices = indices;
+
+        CreateVertexBuffer();
+        CreateIndexBuffer();
+    }
+
+    void Mesh::CreateVertexBuffer()
+    {
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        VkDevice device = Graphics::GetDefaultLogicalDevice();
+        VkDeviceSize s = sizeof(Vertex) * vertices.size();
+        
+        CreateBuffer( 
+            s,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer, stagingBufferMemory
+        );
+
+        void *data;
+        vkMapMemory(device, stagingBufferMemory, 0, s, 0, &data);
+            memcpy(data, vertices.data(), (size_t)s);
+        vkUnmapMemory(device, stagingBufferMemory);
+
+        CreateBuffer(
+            s,
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            vertex_buffer, vertex_buffer_memory
+        );
+    }
+
+    void Mesh::CreateIndexBuffer()
+    {
+        
+    }
+
     void Mesh::Render(Matrix4 mat, VkCommandBuffer cmd)
     {
         vkCmdPushConstants(
@@ -58,6 +142,6 @@ namespace baka
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(cmd, 0, 1, &vertex_buffer, offsets );
         vkCmdBindIndexBuffer(cmd, index_buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(cmd, indices.size() * 3, 1, 0, 0, 0);
+        vkCmdDrawIndexed(cmd, indices.size(), 1, 0, 0, 0);
     }
 }

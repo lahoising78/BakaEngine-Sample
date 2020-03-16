@@ -3,6 +3,7 @@
 #include "baka_vk_queues.h"
 #include <algorithm>
 #include "baka_graphics.h"
+#include "baka_vk_utils.h"
 
 namespace baka
 {
@@ -177,26 +178,6 @@ namespace baka
 
         bakalog("depth image creation completed");
         return true;
-    }
-
-    uint32_t VulkanSwapchain::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
-    {
-        VkPhysicalDeviceMemoryProperties memProperties;
-    
-        /* query supported device memory properties */
-        vkGetPhysicalDeviceMemoryProperties(Graphics::GetDefaultPhysicalDevice(), &memProperties);
-
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
-        {
-            /* matches filter and property flags */
-            if ((typeFilter & (1 << i)) && ((memProperties.memoryTypes[i].propertyFlags & properties) == properties))
-            {
-                return i;
-            }
-        }
-
-        bakawarn("failed to find suitable memory type");
-        return 0;
     }
 
     uint32_t VulkanSwapchain::ChooseFormat()
