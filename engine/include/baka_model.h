@@ -14,9 +14,6 @@ namespace baka
     public:
         Model() {}
         Model(Mesh *mesh, Texture *texture);
-        Model(Mesh *mesh, const char *texturefile);
-        Model(const char *meshfile, Texture *texture);
-        Model(const char *meshfile, const char *texturefile);
         void Render(Matrix4 mat);
 
     private:

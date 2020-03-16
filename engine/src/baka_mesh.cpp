@@ -1,6 +1,7 @@
 #include "baka_logger.h"
 #include "baka_mesh.h"
 #include "baka_vk_pipeline.h"
+#include "baka_graphics.h"
 
 namespace baka
 {
@@ -44,5 +45,21 @@ namespace baka
         // write_descriptor_set.dstArrayElement = 0;
         // write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         // write_descriptor_set.descriptorCount = 1;
+    }
+
+    void Mesh::Render(Matrix4 mat)
+    {
+        VkCommandBuffer cmd = Graphics::GetCurrentCommandBuffer();
+
+        vkCmdPushConstants(
+            cmd, baka_mesh.GetPipeLayout(),
+            VK_SHADER_STAGE_VERTEX_BIT,
+            0, MESH_PUSH_CONST_SIZE, mat
+        );
+
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(cmd, 0, 1, &vertex_buffer, offsets );
+        vkCmdBindIndexBuffer(cmd, index_buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(cmd, indices.size() * 3, 1, 0, 0, 0);
     }
 }

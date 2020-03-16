@@ -28,19 +28,9 @@ namespace baka
         this->texture = texture;
     }
 
-    Model::Model(Mesh *mesh, const char *texturefile)
+    void Model::Render(Matrix4 mat)
     {
-        Model(mesh, baka_texture_manager.Load(texturefile));
-    }
-
-    Model::Model(const char *meshfile, Texture *texture)
-    {
-        Model( baka_mesh.Load(meshfile), texture );
-    }
-
-    Model::Model(const char *meshfile, const char *texturefile)
-    {
-        Model( baka_mesh.Load(meshfile), baka_texture_manager.Load(texturefile) );
+        mesh->Render(mat);
     }
 
 }

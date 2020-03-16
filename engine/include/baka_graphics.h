@@ -8,8 +8,13 @@
 #include "baka_vk_command.h"
 
 namespace baka{
+    
+    class Mesh;
+
     class Graphics
     {
+    friend class Mesh;
+
     public:
         static bool Init( const char *windowName, int width, int height, bool validation );
         static VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
@@ -39,6 +44,7 @@ namespace baka{
         static void CreateSync();
         static void CreateSingleSemaphore(VkSemaphore *sem);
         static void CreateSingleFence(VkFence *fence);
+        static VkCommandBuffer GetCurrentCommandBuffer() { return render_vk_command.GetCurrentCmdBuffer(); }
 
     private:
         static SDL_Window *window;

@@ -65,6 +65,7 @@ namespace baka
             1024
         );
         baka_model_manager.Init(1024, baka_swap.GetSwapchainLength(), device);
+        baka_mesh.SetPipeLayout(pipe->pipeline_layout);
 
         render_vk_command = VulkanCommand(
             device, 
