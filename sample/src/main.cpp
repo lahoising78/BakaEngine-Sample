@@ -6,14 +6,17 @@
 #include <math.h>
 #include <iostream>
 
+baka::Input *baka_in;
+
 int BakaMain(int argc, char *argv[])
 {
+    baka_in = baka::Input::Get();
     return 0;
 }
 
 void BakaUpdate(float deltaTime)
 {
-    if( Baka::Input::KeyPressed(SDL_SCANCODE_R) )
+    if( baka_in->KeyPressed(SDL_SCANCODE_R) )
     {
         bakalog("you just pressed R");
     }
