@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     {
         baka::Input::Init();
         
-        BakaMain(argc, argv);
+        // BakaMain(argc, argv);
     }
 
     frames.Start();
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
         BakaUpdate(0.0f);
 
         baka::Graphics::RenderBegin();
-        baka::Graphics::RenderEnd();
+        // baka::Graphics::RenderEnd();
     }
 
     bakalog("--==== End of application ====--");

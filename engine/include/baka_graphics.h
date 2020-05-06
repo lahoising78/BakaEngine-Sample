@@ -62,6 +62,8 @@ namespace baka{
         static bool logical_device_created;
         static VulkanPipeline *pipe;
         static uint32_t current_cmd_bf;
+        static VkSubmitInfo submitInfo;
+        static VkPipelineStageFlags submitPipelineStages;
         static VkSemaphore render_complete;
         static VkSemaphore present_complete;
         static VulkanCommand render_vk_command;

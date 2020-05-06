@@ -32,6 +32,8 @@ namespace baka
     VkSemaphore Graphics::present_complete;
     uint32_t Graphics::current_cmd_bf;
     VulkanCommand Graphics::render_vk_command;
+    VkSubmitInfo Graphics::submitInfo;
+    VkPipelineStageFlags Graphics::submitPipelineStages;
 
     bool Graphics::Init(  )
     {
@@ -60,6 +62,7 @@ namespace baka
         atexit(Graphics::Close);
 
         queue_manager.SetupDeviceQueues(Graphics::device);
+        SetupUtils(gpu, device);
         baka_swap.Init(gpu, device, surface, width, height);
 
         baka_mesh.Init(1024);
@@ -92,6 +95,15 @@ namespace baka
          * when we start rendering, we are going to need semaphores to tell the program when it is ok to continue 
          * https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Rendering_and_presentation#page_Semaphores */
         CreateSync();
+
+        submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.pWaitDstStageMask = &submitPipelineStages;
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = &present_complete;
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = &render_complete;
+        render_vk_command.InitDefaultCommand(pipe->render_pass, baka_swap.GetSwapchainExtent(), baka_swap.GetAllFramebuffers());
 
         bakalog("baka graphics initialized");
         return true;
@@ -191,7 +203,7 @@ namespace baka
         }
 
         vkEnumeratePhysicalDevices(vk_instance, &count, nullptr);
-        bakalog("Found %u %s for Vulkan", count, count > 1? "devices" : "device");
+        bakalog("Found %u %s for Vulkan", count, count == 1? "device" : "devices");
         if(!count)
         {
             bakaerr("Could not find a device for application");
@@ -218,8 +230,6 @@ namespace baka
             return false;
         }
         logical_device_created = true;
-
-        SetupUtils(gpu, device);
         
         return true;
     }
@@ -365,81 +375,85 @@ namespace baka
          * to start rendering, we need to get an image from the swapchain.
          * this is done by using vkAcquireNextImageKHR */
 
-        vkAcquireNextImageKHR(
-            device, 
-            baka_swap.GetSwapchain(),
-            /* this is a timeout in nanoseconds for an image to become avilable.
-            setting it to UIT64_MAX turns off the timeout */
-            UINT64_MAX,
-            /* wait for presentation to be complete */
-            present_complete,
-            VK_NULL_HANDLE,
-            /* index of image */
-            &current_cmd_bf
-        );
-
+        baka_swap.AcquireNextImage( present_complete, &current_cmd_bf );
         render_vk_command.SetCurrentCmdBuffer(current_cmd_bf);
 
         /* to render in vulkan you must recond commands through a queue */
-        render_vk_command.BeginCmdBuffer();
+        // render_vk_command.BeginCmdBuffer();
 
-        VkRenderPassBeginInfo renderPassInfo = {};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = pipe->GetRenderPass();
-        renderPassInfo.framebuffer = baka_swap.GetFramebuffer(current_cmd_bf);
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = baka_swap.GetSwapchainExtent();
+        // VkRenderPassBeginInfo renderPassInfo = {};
+        // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        // renderPassInfo.renderPass = pipe->GetRenderPass();
+        // renderPassInfo.framebuffer = baka_swap.GetFramebuffer(current_cmd_bf);
+        // renderPassInfo.renderArea.offset = {0, 0};
+        // renderPassInfo.renderArea.extent = baka_swap.GetSwapchainExtent();
 
-        VkClearValue clearval = {0.8f, 0.4f, 0.4f, 1.0f};
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearval;
+        // VkClearValue clearval = {0.8f, 0.4f, 0.4f, 1.0f};
+        // renderPassInfo.clearValueCount = 1;
+        // renderPassInfo.pClearValues = &clearval;
 
-        vkCmdBindPipeline(render_vk_command.GetCurrentCmdBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe->pipeline);
-        vkCmdBeginRenderPass(render_vk_command.GetCurrentCmdBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        // vkCmdBindPipeline(render_vk_command.GetCurrentCmdBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe->pipeline);
+        // vkCmdBeginRenderPass(render_vk_command.GetCurrentCmdBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &render_vk_command.command_buffers[current_cmd_bf];
+
+        VkResult res = vkQueueSubmit( queue_manager.GetQueue(QUEUE_TYPE_GRAPHICS), 1, &submitInfo, VK_NULL_HANDLE );
+        if(res != VK_SUCCESS)
+        {
+            bakaerr("queue submit failed with error code %d", res);
+        }
+        baka_swap.QueuePresent( queue_manager.GetQueue(QUEUE_TYPE_GRAPHICS), current_cmd_bf, render_complete );
+
+        res = vkQueueWaitIdle( queue_manager.GetQueue(QUEUE_TYPE_GRAPHICS) );
+        if( res != VK_SUCCESS )
+        {
+            bakaerr("could not wait for graphics queue. Failed with error code %d", res);
+        }
 
         return current_cmd_bf;
     }
 
     void Graphics::RenderEnd()
     {
-        VkResult res;
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        // VkResult res;
+        // VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-        vkCmdEndRenderPass(render_vk_command.GetCurrentCmdBuffer());
-        vkEndCommandBuffer(render_vk_command.GetCurrentCmdBuffer());
+        // vkCmdEndRenderPass(render_vk_command.GetCurrentCmdBuffer());
+        // vkEndCommandBuffer(render_vk_command.GetCurrentCmdBuffer());
 
-        std::vector<VkSubmitInfo> submitInfoVec(1);
-        VkSubmitInfo submitInfo = {};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = &present_complete;
-        submitInfo.pWaitDstStageMask = waitStages;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &render_vk_command.GetCurrentCmdBuffer();
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = &render_complete;
-        submitInfoVec[0] = submitInfo;
+        // std::vector<VkSubmitInfo> submitInfoVec(1);
+        // VkSubmitInfo submitInfo = {};
+        // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        // submitInfo.waitSemaphoreCount = 1;
+        // submitInfo.pWaitSemaphores = &present_complete;
+        // submitInfo.pWaitDstStageMask = waitStages;
+        // submitInfo.commandBufferCount = 1;
+        // submitInfo.pCommandBuffers = &render_vk_command.GetCurrentCmdBuffer();
+        // submitInfo.signalSemaphoreCount = 1;
+        // submitInfo.pSignalSemaphores = &render_complete;
+        // submitInfoVec[0] = submitInfo;
 
-        // vkResetFences(device, 1, &wait_fences[current_cmd_index]);
+        // // vkResetFences(device, 1, &wait_fences[current_cmd_index]);
 
-        // res = vkQueueSubmit(queue_manager.GetQueue(QUEUE_TYPE_GRAPHICS), 1, &submitInfo, VK_NULL_HANDLE);
-        render_vk_command.SubmitQueue(queue_manager.GetQueue(QUEUE_TYPE_GRAPHICS), submitInfoVec, true);
+        // // res = vkQueueSubmit(queue_manager.GetQueue(QUEUE_TYPE_GRAPHICS), 1, &submitInfo, VK_NULL_HANDLE);
+        // render_vk_command.SubmitQueue(queue_manager.GetQueue(QUEUE_TYPE_GRAPHICS), submitInfoVec, true);
 
-        VkSwapchainKHR swaps[] = {baka_swap.GetSwapchain()};
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.pWaitSemaphores = &render_complete;
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pSwapchains = swaps;
-        presentInfo.swapchainCount = 1;
-        presentInfo.pImageIndices = &current_cmd_bf;
+        // VkSwapchainKHR swaps[] = {baka_swap.GetSwapchain()};
+        // VkPresentInfoKHR presentInfo = {};
+        // presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        // presentInfo.pWaitSemaphores = &render_complete;
+        // presentInfo.waitSemaphoreCount = 1;
+        // presentInfo.pSwapchains = swaps;
+        // presentInfo.swapchainCount = 1;
+        // presentInfo.pImageIndices = &current_cmd_bf;
 
-        res = vkQueuePresentKHR(queue_manager.GetQueue(QUEUE_TYPE_PRESENT), &presentInfo);
-        if(res != VK_SUCCESS)
-        {
-            bakaerr("unable to present frame");
-            return;
-        }
+        // res = vkQueuePresentKHR(queue_manager.GetQueue(QUEUE_TYPE_PRESENT), &presentInfo);
+        // if(res != VK_SUCCESS)
+        // {
+        //     bakaerr("unable to present frame");
+        //     return;
+        // }
     }
     
     /* VULKAN DEBUG */

@@ -332,4 +332,37 @@ namespace baka
             bakaerr("framebuffer creation failed with error code %d", res);
         }
     }
+
+    VkResult VulkanSwapchain::AcquireNextImage( VkSemaphore presentSemaphore, uint32_t *currentBuffer )
+    {
+        return vkAcquireNextImageKHR(
+            device, 
+            swapchain, 
+            /* this is a timeout in nanoseconds for an image to become avilable.
+            setting it to UIT64_MAX turns off the timeout */
+            UINT64_MAX, 
+            /* wait for presentation to be complete */
+            presentSemaphore, 
+            (VkFence)nullptr, 
+            /* index of image */
+            currentBuffer
+        );
+    }
+
+    VkResult VulkanSwapchain::QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
+    {
+        VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.pNext = NULL;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &swapchain;
+		presentInfo.pImageIndices = &imageIndex;
+		// Check if a wait semaphore has been specified to wait for before presenting the image
+		if (waitSemaphore != VK_NULL_HANDLE)
+		{
+			presentInfo.pWaitSemaphores = &waitSemaphore;
+			presentInfo.waitSemaphoreCount = 1;
+		}
+		return vkQueuePresentKHR(queue, &presentInfo);
+    }
 }

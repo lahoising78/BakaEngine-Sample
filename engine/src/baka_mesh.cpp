@@ -8,6 +8,7 @@ namespace baka
 {
     MeshManager baka_mesh;
 
+    /* --============= MESH MANAGER =============-- */
     void MeshManager::Init(uint32_t count)
     {
         bakalog("initialize mesh manager");
@@ -68,6 +69,7 @@ namespace baka
         return mesh;
     }
 
+    /* --========== MESH ==========-- */
     Mesh::~Mesh()
     {
         Free();
@@ -124,11 +126,45 @@ namespace baka
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             vertex_buffer, vertex_buffer_memory
         );
+
+        CopyBuffer(stagingBuffer, vertex_buffer, s);
+
+        vkDestroyBuffer(device, stagingBuffer, nullptr);
+        vkFreeMemory(device, stagingBufferMemory, nullptr);
+
+        bakalog("created mesh vertex buffers");
     }
 
     void Mesh::CreateIndexBuffer()
     {
-        
+        VkBuffer stagingBuffer = {};
+        VkDeviceMemory stagingBufferMemory = {};
+        VkDevice device = Graphics::GetDefaultLogicalDevice();
+        VkDeviceSize s = sizeof( indices[0] ) * indices.size();
+
+        CreateBuffer( 
+            s, 
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer, stagingBufferMemory 
+        );
+
+        void *data;
+        vkMapMemory(device, stagingBufferMemory, 0, s, 0, &data);
+            memcpy(data, indices.data(), s);
+        vkUnmapMemory(device, stagingBufferMemory);
+
+        CreateBuffer(
+            s,
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            index_buffer, index_buffer_memory
+        );
+
+        CopyBuffer(stagingBuffer, index_buffer, s);
+
+        vkDestroyBuffer(device, stagingBuffer, nullptr);
+        vkFreeMemory(device, index_buffer_memory, nullptr);
     }
 
     void Mesh::Render(Matrix4 mat, VkCommandBuffer cmd)

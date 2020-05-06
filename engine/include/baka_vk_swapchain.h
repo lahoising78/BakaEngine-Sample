@@ -19,7 +19,10 @@ namespace baka
         VkExtent2D GetSwapchainExtent() {return extent;}
         VkSurfaceFormatKHR GetChosenFormat() { return formats[chosen_format]; }
         VkFramebuffer GetFramebuffer(uint32_t frame) { if(frame < framebuffers.size()) return framebuffers[frame]; return VK_NULL_HANDLE; }
+        std::vector<VkFramebuffer> &GetAllFramebuffers() { return framebuffers; }
         uint32_t GetImageCount() { return images.size(); }
+        VkResult AcquireNextImage( VkSemaphore presentSemaphore, uint32_t *currentBuffer );
+        VkResult QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
 
     private:
         uint32_t ChooseFormat();

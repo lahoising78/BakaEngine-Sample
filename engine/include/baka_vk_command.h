@@ -9,8 +9,9 @@ namespace baka
     class VulkanCommand
     {
     public:
-        VulkanCommand(VkDevice device, uint32_t bufferCount, int32_t queueFamIndex);
+        VulkanCommand(VkDevice device, uint32_t bufferCount, uint32_t queueFamIndex);
         VulkanCommand() {}
+        VkResult InitDefaultCommand(VkRenderPass renderpass, VkExtent2D extent, std::vector<VkFramebuffer> framebuffers);
         void Free();
 
     private:

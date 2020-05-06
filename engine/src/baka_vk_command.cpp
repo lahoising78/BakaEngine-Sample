@@ -10,7 +10,7 @@ namespace baka
      * this allows us to do all the hard work in advance and/or in multiple threads
      * https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Command_buffers
      * */
-    VulkanCommand::VulkanCommand(VkDevice device, uint32_t bufferCount, int32_t queueFamIndex)
+    VulkanCommand::VulkanCommand(VkDevice device, uint32_t bufferCount, uint32_t queueFamIndex)
     {
         VkResult res;
         VkCommandPoolCreateInfo poolInfo = {};
@@ -40,7 +40,7 @@ namespace baka
          * */
         bufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         bufferAllocInfo.commandPool = command_pool;
-        bufferAllocInfo.commandBufferCount = command_buffers.size();
+        bufferAllocInfo.commandBufferCount = (uint32_t)command_buffers.size();
 
         res = vkAllocateCommandBuffers(device, &bufferAllocInfo, (VkCommandBuffer*)command_buffers.data());
         if(res != VK_SUCCESS)
@@ -156,5 +156,50 @@ namespace baka
             vkDestroyCommandPool(device, command_pool, nullptr);
         }
 
+    }
+
+    VkResult VulkanCommand::InitDefaultCommand(VkRenderPass renderpass, VkExtent2D extent, std::vector<VkFramebuffer> framebuffers)
+    {
+        VkCommandBufferBeginInfo cmdBufInfo = {};
+        cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+		VkClearValue clearValues[2];
+		clearValues[0].color = {0.8f, 0.4f, 0.4f, 1.0f};
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+        renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.renderPass = renderpass;
+		renderPassBeginInfo.renderArea.offset.x = 0;
+		renderPassBeginInfo.renderArea.offset.y = 0;
+		renderPassBeginInfo.renderArea.extent.width =  extent.width;
+		renderPassBeginInfo.renderArea.extent.height = extent.height;
+		renderPassBeginInfo.clearValueCount = 2;
+		renderPassBeginInfo.pClearValues = clearValues;
+
+        for (uint32_t i = 0; i < command_buffers.size(); ++i)
+		{
+			renderPassBeginInfo.framebuffer = framebuffers[i];
+
+			VkResult res = vkBeginCommandBuffer(command_buffers[i], &cmdBufInfo);
+            if(res != VK_SUCCESS)
+            {
+                bakaerr("failed to begin command buffer with error code %d", res);
+                return res;
+            }
+
+			vkCmdBeginRenderPass(command_buffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			vkCmdEndRenderPass(command_buffers[i]);
+
+			res = vkEndCommandBuffer(command_buffers[i]);
+            if(res != VK_SUCCESS)
+            {
+                bakaerr("failed to end cmd buffer with error code %d", res);
+                return res;
+            }
+		}
+
+        return VK_SUCCESS;
     }
 }
