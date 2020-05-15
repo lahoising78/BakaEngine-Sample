@@ -1,16 +1,3 @@
-# project(Sample)
-
-# file(
-#     GLOB sample_src
-#     "include/*.h"
-#     "src/*.cpp"
-# )
-
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_HOME_DIRECTORY}/build/")
-# add_executable(app "${sample_src}")
-
-# target_link_libraries(app PUBLIC baka_engine)
-
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_FLAGS "-Wall -Wpedantic -Werror")
