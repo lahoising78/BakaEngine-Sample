@@ -2,17 +2,16 @@
 #include "baka_logger.h"
 #include "baka_input.h"
 #include "baka_graphics.h"
+#include "vk_sample.h"
 
 int BakaApplication::Main(int argc, char *argv[])
 {
-    baka::Graphics::Init("Baka Engine", 1280, 720, 0);
+    vk_graphics = new baka::VulkanGraphics("Baka Engine");
 
-    #ifdef VULKAN_AVAILABLE
-    bakalog("vulkan available");
-    vk_graphics = new baka::VulkanGraphics();
-    #else
-    bakaerr("vulkan not found");
-    #endif
+    uint32_t flags = 0;
+    if(vk_graphics) flags |= baka::GraphicAPI::VULKAN;
+    
+    baka::Graphics::Init("Baka Engine", 1280, 720, flags);
 
     return 0;
 }
@@ -27,5 +26,6 @@ void BakaApplication::Update(float deltaTime)
 
 BakaApplication::~BakaApplication()
 {
-
+    if(vk_graphics)
+        delete vk_graphics;
 }
