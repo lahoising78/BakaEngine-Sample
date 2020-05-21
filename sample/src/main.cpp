@@ -5,12 +5,12 @@
 
 int BakaApplication::Main(int argc, char *argv[])
 {
-    bool validations = true;
+    bool validations = false;
     for(int i = 1; i < argc; i++)
     {
-        if( strcmp(argv[i], "-nv") == 0 || strcmp(argv[i], "--no-validations") == 0 )
+        if( strcmp(argv[i], "-vv") == 0 || strcmp(argv[i], "--validations") == 0 )
         {
-            validations = false;
+            validations = true;
         }
     }
 
