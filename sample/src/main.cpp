@@ -18,10 +18,11 @@ int BakaApplication::Main(int argc, char *argv[])
     vk_graphics = new baka::VulkanGraphics("Baka Engine", validations);
     #endif
 
-    uint32_t flags = 0;
-    if(this->vk_graphics) flags |= baka::GraphicAPI::VULKAN;
+    #ifdef OPEN_GL_AVAILABLE
+    gl_graphics = new baka::GLGraphics();
+    #endif
 
-    baka::Graphics::Init("Baka Engine", 1280, 720, flags);
+    baka::Graphics::Init("Baka Engine", 1280, 720, this);
 
     return 0;
 }
@@ -38,4 +39,7 @@ BakaApplication::~BakaApplication()
 {
     if(vk_graphics)
         delete vk_graphics;
+
+    if(gl_graphics)
+        delete gl_graphics;
 }
