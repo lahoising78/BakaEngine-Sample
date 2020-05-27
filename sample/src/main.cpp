@@ -14,10 +14,12 @@ int BakaApplication::Main(int argc, char *argv[])
         }
     }
 
+    #ifdef VULKAN_AVAILABLE
     vk_graphics = new baka::VulkanGraphics("Baka Engine", validations);
+    #endif
 
     uint32_t flags = 0;
-    if(vk_graphics) flags |= baka::GraphicAPI::VULKAN;
+    if(this->vk_graphics) flags |= baka::GraphicAPI::VULKAN;
 
     baka::Graphics::Init("Baka Engine", 1280, 720, flags);
 
