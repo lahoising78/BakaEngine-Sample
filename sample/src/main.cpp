@@ -1,45 +1,27 @@
-#include "Baka.h"
-#include "baka_logger.h"
-#include "baka_input.h"
-#include "baka_graphics.h"
+#include <cstdio>
 
-int BakaApplication::Main(int argc, char *argv[])
+#include <baka_logger.h>
+
+#include <baka_application.h>
+
+class SampleApp : public baka::BakaApplication
 {
-    bool validations = false;
-    for(int i = 1; i < argc; i++)
+public:
+    SampleApp()
+        : baka::BakaApplication()
     {
-        if( strcmp(argv[i], "-vv") == 0 || strcmp(argv[i], "--validations") == 0 )
-        {
-            validations = true;
-        }
+        app_config.initialWindowWidth = 1280;
+        app_config.initialWindowHeight = 720;
+        snprintf(app_config.initialWindowName, BAKA_WINDOW_NAME_MAX_LENGTH, "Sample Application");
     }
 
-    #ifdef VULKAN_AVAILABLE
-    vk_graphics = new baka::VulkanGraphics("Baka Engine", validations);
-    #endif
+    void Update() override
+    {}
+};
 
-    #ifdef OPEN_GL_AVAILABLE
-    gl_graphics = new baka::GLGraphics();
-    #endif
-
-    baka::Graphics::Init("Baka Engine", 1280, 720, this);
-
+int main(int argc, char *argv[])
+{
+    SampleApp app = SampleApp();
+    app.Start();
     return 0;
-}
-
-void BakaApplication::Update(float deltaTime)
-{
-    if( baka::Input::KeyPressed(SDL_SCANCODE_R) )
-    {
-        bakalog("you just pressed R");
-    }
-}
-
-BakaApplication::~BakaApplication()
-{
-    if(vk_graphics)
-        delete vk_graphics;
-
-    if(gl_graphics)
-        delete gl_graphics;
 }
