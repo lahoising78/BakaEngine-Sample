@@ -5,7 +5,7 @@
 #include <baka_application.h>
 #include <baka_time.h>
 
-baka::Input *input = &baka::Input::Get();
+baka::Input *g_input = &baka::Input::Get();
 baka::Time *g_time = nullptr;
 class SampleApp : public baka::BakaApplication
 {
@@ -22,7 +22,22 @@ public:
 
     void Update() override
     {
-        bakalog("time in int64 since start: %f", g_time->GetTime<float>());
+        // bakalog("time in int64 since start: %li", g_time->GetTime());
+
+        if( g_input->IsMouseButtonPressed(BAKA_MOUSE_BUTTON_RIGHT) )
+        {
+            bakalog("Mouse button right is actively pressed");
+        }
+
+        if( g_input->MouseButtonJustPressed(BAKA_MOUSE_BUTTON_LEFT) )
+        {
+            bakalog("just pressed");
+        }
+
+        if(g_input->MouseButtonJustReleased(BAKA_MOUSE_BUTTON_LEFT))
+        {
+            bakalog("button released");
+        }
     }
 };
 
