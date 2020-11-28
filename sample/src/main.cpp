@@ -58,12 +58,33 @@ public:
 
         mesh = baka::Mesh::Create(vb,layout, ib);
 
-        cam = baka::Camera(baka::CameraType::PERSPECTIVE, {45.0f});
-        cam.SetPosition(glm::vec3(0.0f, 0.0f, -1.0f));
+        cam = baka::Camera(baka::CameraType::PERSPECTIVE, {45.0f}, 0.1f, 1000.0f);
     }
 
     void Update() override
     {
+        static glm::vec3 camPos = glm::vec3(0.0f, 0.0f, -1.0f);
+        static glm::quat camRot = glm::identity<glm::quat>();
+        const float speed = 0.8f;
+        const float rotSpeed = M_PI / 4.0f; //in rads per second
+        
+        float dt = g_time->GetDeltaTime() / 1000.0f;
+        int fwd = g_input->IsKeyPressed(BAKA_KEYCODE_W) - g_input->IsKeyPressed(BAKA_KEYCODE_S);
+        int side = g_input->IsKeyPressed(BAKA_KEYCODE_D) - g_input->IsKeyPressed(BAKA_KEYCODE_A);
+        glm::vec3 f = (glm::quat(camRot) * glm::vec3(0.0f, 0.0f, 1.0f)) * (speed * dt * (float)fwd);
+        glm::vec3 r = (glm::quat(camRot) * glm::vec3(-1.0f, 0.0f, 0.0f)) * (speed * dt * (float)side);
+        camPos += f + r;
+        cam.SetPosition(camPos);
+        
+        int ver = g_input->IsKeyPressed(BAKA_KEYCODE_UP) - g_input->IsKeyPressed(BAKA_KEYCODE_DOWN);
+        int hor = g_input->IsKeyPressed(BAKA_KEYCODE_RIGHT) - g_input->IsKeyPressed(BAKA_KEYCODE_LEFT);
+        camRot *= glm::quat(glm::vec3(
+            -ver * rotSpeed * dt,
+            -hor * rotSpeed * dt,
+            0.0f
+        ));
+        cam.SetRotation(camRot);
+
         cam.Update();
     }
 
