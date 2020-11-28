@@ -15,3 +15,4 @@ file(
 add_executable(app "${sample_src}")
 target_include_directories(app PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(app PUBLIC baka_engine)
+baka_import_dlls("app")
