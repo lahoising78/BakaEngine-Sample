@@ -36,8 +36,8 @@ public:
     void Start() override
     {
         defaultShader = baka::Shader::Load(
-            "D:/Documents/git/baka/sample/build/resources" "/shaders/default.vert",
-            "D:/Documents/git/baka/sample/build/resources" "/shaders/default.frag"
+            "/shaders/default.vert",
+            "/shaders/default.frag"
         );
 
         float vertices[] = 
