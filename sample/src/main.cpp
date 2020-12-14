@@ -40,25 +40,7 @@ public:
             "/shaders/default.frag"
         );
 
-        // float vertices[] = 
-        // {
-        //     -0.5f, -0.5f, 0.0f, // 1.0f, 1.0f, 1.0f, 1.0f,
-        //      0.5f, -0.5f, 0.0f, // 0.0f, 1.0f, 0.0f, 1.0f,
-        //      0.0f,  0.5f, 0.0f // 1.0f, 0.0f, 0.0f, 1.0f        
-        // };
-        // baka::VertexBuffer *vb = baka::VertexBuffer::Create(vertices, sizeof(vertices));
-
-        // baka::VertexBufferLayout layout = baka::VertexBufferLayout({
-        //     { baka::VertexAttributeType::ATTRIBUTE_FLOAT, 3 }//,
-        //     // { baka::VertexAttributeType::ATTRIBUTE_FLOAT, 4 }
-        // });
-
-        // std::uint32_t indices[] = { 0, 1, 2 };
-        // baka::IndexBuffer *ib = baka::IndexBuffer::Create(indices, sizeof(indices) / sizeof(std::uint32_t));
-
-        // mesh = baka::Mesh::Create(vb,layout, ib);
-
-        mesh = baka::Mesh::PrimitiveMesh(baka::Primitive::CUBE);
+        mesh = baka::Mesh::PrimitiveMesh(baka::Primitive::SPHERE);
         cam = baka::Camera(baka::CameraType::PERSPECTIVE, {45.0f}, 0.1f, 1000.0f);
     }
 
