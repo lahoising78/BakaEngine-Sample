@@ -42,7 +42,7 @@ public:
             "/shaders/default.frag"
         );
 
-        mesh = baka::Mesh::PrimitiveMesh(baka::Primitive::CUBE);
+        mesh = baka::Mesh::PrimitiveMesh(baka::Primitive::CONE);
         cam = baka::Camera(baka::CameraType::PERSPECTIVE, {45.0f}, 0.1f, 1000.0f);
         rot = glm::identity<glm::quat>();
     }
@@ -75,7 +75,8 @@ public:
 
         cam.Update();
 
-        rot *= glm::quat(glm::vec3(0.0f, M_PI * dt, 0.0f));
+        if(g_input->IsKeyPressed(BAKA_KEYCODE_E))
+            rot *= glm::quat(glm::vec3(0.0f, M_PI * dt, 0.0f));
     }
 
     void OnRender() override
@@ -97,11 +98,7 @@ public:
         defaultShader->SetUniform(
             baka::Shader::Type::MAT4X4,
             "u_normalMat",
-            (void*)glm::value_ptr( 
-                glm::transpose(
-                    glm::inverse(cam.GetView() * rotMat)
-                ) 
-            )
+            (void*)glm::value_ptr( rotMat )
         );
         mesh->Render();
     }
