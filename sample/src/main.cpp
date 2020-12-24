@@ -15,6 +15,7 @@
 
 #include <lights/directional_light.h>
 #include <lights/ambient_light.h>
+#include <lights/point_light.h>
 
 baka::Input *g_input = &baka::Input::Get();
 baka::Time *g_time = nullptr;
@@ -34,6 +35,8 @@ public:
     ~SampleApp()
     {
         if(mesh) delete mesh;
+        if(lightModel) delete lightModel;
+        if(floor) delete floor;
         if(defaultShader) delete defaultShader;
         bakalog("sample app destroyed");
     }
@@ -60,7 +63,12 @@ public:
             0.4f
         );
 
+        pointLight = baka::PointLight(
+            glm::vec3(0.0f, 1.0f, 0.0f)
+        );
+
         floor = baka::Mesh::PrimitiveMesh(baka::Primitive::PLANE);
+        lightModel = baka::Mesh::PrimitiveMesh(baka::Primitive::SPHERE);
     }
 
     void Update() override
@@ -127,6 +135,7 @@ public:
         );
         dirLight.Bind(defaultShader, "u_dirLight");
         ambientLight.Bind(defaultShader, "u_ambientLight");
+        pointLight.Bind(defaultShader, "u_pointLight");
         mesh->Render();
         defaultShader->Unbind();
 
@@ -155,7 +164,29 @@ public:
         );
         dirLight.Bind(defaultShader, "u_dirLight");
         ambientLight.Bind(defaultShader, "u_ambientLight");
+        pointLight.Bind(defaultShader, "u_pointLight");
         floor->Render();
+        defaultShader->Unbind();
+
+        modelMat = glm::translate(glm::mat4(1.0f), pointLight.position) * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
+
+        defaultShader->Bind();
+        defaultShader->SetUniform(
+            baka::Shader::Type::MAT4X4,
+            "u_modelViewProj",
+            (void*)glm::value_ptr(cam.GetViewProjection() * modelMat)
+        );
+        defaultShader->SetUniform(
+            baka::Shader::Type::FLOAT4,
+            "u_tint",
+            (void*)glm::value_ptr(pointLight.color)
+        );
+        defaultShader->SetUniform(
+            baka::Shader::Type::MAT4X4,
+            "u_normalMat",
+            (void*)glm::value_ptr( modelMat )
+        );
+        lightModel->Render();
         defaultShader->Unbind();
     }
 
@@ -166,11 +197,13 @@ private:
     glm::quat rot;
 
     baka::Mesh *floor;
+    baka::Mesh *lightModel;
 
     glm::vec3 modelPos = glm::vec3(0.0f, 0.0f, 0.0f);
     
     baka::DirectionalLight dirLight;
     baka::AmbientLight ambientLight;
+    baka::PointLight pointLight;
 };
 
 int main(int argc, char *argv[])
