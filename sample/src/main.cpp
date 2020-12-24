@@ -13,6 +13,9 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <lights/directional_light.h>
+#include <lights/ambient_light.h>
+
 baka::Input *g_input = &baka::Input::Get();
 baka::Time *g_time = nullptr;
 class SampleApp : public baka::BakaApplication
@@ -45,6 +48,17 @@ public:
         mesh = baka::Mesh::PrimitiveMesh(baka::Primitive::CONE);
         cam = baka::Camera(baka::CameraType::PERSPECTIVE, {45.0f}, 0.1f, 1000.0f);
         rot = glm::identity<glm::quat>();
+
+        dirLight = baka::DirectionalLight(
+            glm::vec3(90.0f / 255.0f, 140.0f / 255.0f, 252.0f / 255.0f),
+            1.0f,
+            glm::quat(glm::vec3(0.0f, 0.0f, 0.0f))
+        );
+
+        ambientLight = baka::AmbientLight(
+            glm::vec3(235.0f / 255.0f, 126.0f / 255.0f, 80.0f / 255.0f),
+            0.4f
+        );
     }
 
     void Update() override
@@ -77,11 +91,13 @@ public:
 
         if(g_input->IsKeyPressed(BAKA_KEYCODE_E))
             rot *= glm::quat(glm::vec3(0.0f, M_PI * dt, 0.0f));
+
+        // light.rotation *= glm::quat(glm::vec3(0.0f, rotSpeed * dt, 0.0f));
     }
 
     void OnRender() override
     {
-        const glm::vec4 tint = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+        const glm::vec4 tint = glm::vec4(0.3f, 0.7f, 0.3f, 1.0f);
         const glm::mat4 rotMat = glm::toMat4(rot);
 
         defaultShader->Bind();
@@ -100,6 +116,8 @@ public:
             "u_normalMat",
             (void*)glm::value_ptr( rotMat )
         );
+        dirLight.Bind(defaultShader, "u_dirLight");
+        ambientLight.Bind(defaultShader, "u_ambientLight");
         mesh->Render();
     }
 
@@ -108,6 +126,9 @@ private:
     baka::Shader *defaultShader;
     baka::Mesh *mesh;
     glm::quat rot;
+    
+    baka::DirectionalLight dirLight;
+    baka::AmbientLight ambientLight;
 };
 
 int main(int argc, char *argv[])
