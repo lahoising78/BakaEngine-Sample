@@ -59,6 +59,8 @@ public:
             glm::vec3(235.0f / 255.0f, 126.0f / 255.0f, 80.0f / 255.0f),
             0.4f
         );
+
+        floor = baka::Mesh::PrimitiveMesh(baka::Primitive::PLANE);
     }
 
     void Update() override
@@ -73,7 +75,7 @@ public:
         int side = g_input->IsKeyPressed(BAKA_KEYCODE_D) - g_input->IsKeyPressed(BAKA_KEYCODE_A);
         int vertical = g_input->IsKeyPressed(BAKA_KEYCODE_SPACE) - g_input->IsKeyPressed(BAKA_KEYCODE_LSHIFT);
         glm::vec3 f  = (glm::quat(camRot) * glm::vec3( 0.0f, 0.0f, 1.0f)) * (speed * dt * (float)fwd);
-        glm::vec3 r  = (glm::quat(camRot) * glm::vec3(-1.0f, 0.0f, 0.0f)) * (speed * dt * (float)side);
+        glm::vec3 r  = (glm::quat(camRot) * glm::vec3( 1.0f, 0.0f, 0.0f)) * (speed * dt * (float)side);
         glm::vec3 up = (glm::quat(camRot) * glm::vec3( 0.0f, 1.0f, 0.0f)) * (speed * dt * (float)vertical);
         camPos += f + r + up;
         cam.SetPosition(camPos);
@@ -82,7 +84,7 @@ public:
         int hor = g_input->IsKeyPressed(BAKA_KEYCODE_RIGHT) - g_input->IsKeyPressed(BAKA_KEYCODE_LEFT);
         camRot *= glm::quat(glm::vec3(
             -ver * rotSpeed * dt,
-            -hor * rotSpeed * dt,
+            hor * rotSpeed * dt,
             0.0f
         ));
         cam.SetRotation(camRot);
@@ -93,18 +95,25 @@ public:
             rot *= glm::quat(glm::vec3(0.0f, M_PI * dt, 0.0f));
 
         // light.rotation *= glm::quat(glm::vec3(0.0f, rotSpeed * dt, 0.0f));
+        int modelFwd = g_input->IsKeyPressed(BAKA_KEYCODE_U) - g_input->IsKeyPressed(BAKA_KEYCODE_J);
+        int modelRight = g_input->IsKeyPressed(BAKA_KEYCODE_K) - g_input->IsKeyPressed(BAKA_KEYCODE_H);
+        modelPos += glm::vec3(
+            modelRight * speed * dt,
+            0.0f,
+            modelFwd * speed * dt
+        );
     }
 
     void OnRender() override
     {
-        const glm::vec4 tint = glm::vec4(0.3f, 0.7f, 0.3f, 1.0f);
-        const glm::mat4 rotMat = glm::toMat4(rot);
+        const glm::vec4 tint = glm::vec4(0.5f, 0.7f, 0.5f, 1.0f);
+        glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), modelPos) * glm::toMat4(rot);
 
         defaultShader->Bind();
         defaultShader->SetUniform(
             baka::Shader::Type::MAT4X4,
             "u_modelViewProj",
-            (void*)glm::value_ptr(cam.GetViewProjection() * rotMat)
+            (void*)glm::value_ptr(cam.GetViewProjection() * modelMat)
         );
         defaultShader->SetUniform(
             baka::Shader::Type::FLOAT4,
@@ -114,11 +123,40 @@ public:
         defaultShader->SetUniform(
             baka::Shader::Type::MAT4X4,
             "u_normalMat",
-            (void*)glm::value_ptr( rotMat )
+            (void*)glm::value_ptr(  modelMat )
         );
         dirLight.Bind(defaultShader, "u_dirLight");
         ambientLight.Bind(defaultShader, "u_ambientLight");
         mesh->Render();
+        defaultShader->Unbind();
+
+        modelMat = glm::translate( glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)) * 
+                    glm::toMat4(
+                        glm::quat(
+                            glm::vec3(glm::pi<float>() / 2.0f, 0.0f, 0.0f)
+                        )
+                    );
+
+        defaultShader->Bind();
+        defaultShader->SetUniform(
+            baka::Shader::Type::MAT4X4,
+            "u_modelViewProj",
+            (void*)glm::value_ptr(cam.GetViewProjection() * modelMat)
+        );
+        defaultShader->SetUniform(
+            baka::Shader::Type::FLOAT4,
+            "u_tint",
+            (void*)glm::value_ptr(glm::vec4(1.0f))
+        );
+        defaultShader->SetUniform(
+            baka::Shader::Type::MAT4X4,
+            "u_normalMat",
+            (void*)glm::value_ptr( modelMat )
+        );
+        dirLight.Bind(defaultShader, "u_dirLight");
+        ambientLight.Bind(defaultShader, "u_ambientLight");
+        floor->Render();
+        defaultShader->Unbind();
     }
 
 private:
@@ -126,6 +164,10 @@ private:
     baka::Shader *defaultShader;
     baka::Mesh *mesh;
     glm::quat rot;
+
+    baka::Mesh *floor;
+
+    glm::vec3 modelPos = glm::vec3(0.0f, 0.0f, 0.0f);
     
     baka::DirectionalLight dirLight;
     baka::AmbientLight ambientLight;
