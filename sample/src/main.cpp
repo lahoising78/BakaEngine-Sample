@@ -13,9 +13,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include <lights/directional_light.h>
-#include <lights/ambient_light.h>
-#include <lights/point_light.h>
+#include <baka_lights.h>
 
 baka::Input *g_input = &baka::Input::Get();
 baka::Time *g_time = nullptr;
@@ -60,7 +58,7 @@ public:
 
         ambientLight = baka::AmbientLight(
             glm::vec3(235.0f / 255.0f, 126.0f / 255.0f, 80.0f / 255.0f),
-            0.4f
+            1.0f
         );
 
         pointLight = baka::PointLight(
@@ -69,6 +67,11 @@ public:
 
         floor = baka::Mesh::PrimitiveMesh(baka::Primitive::PLANE);
         lightModel = baka::Mesh::PrimitiveMesh(baka::Primitive::SPHERE);
+
+        baka::LightsManager &lights = baka::LightsManager::Get();
+        lights.ActivateLight(&ambientLight);
+        lights.ActivateLight(&pointLight);
+        lights.ActivateLight(&dirLight);
     }
 
     void Update() override
@@ -76,7 +79,7 @@ public:
         static glm::vec3 camPos = glm::vec3(0.0f, 0.0f, -5.0f);
         static glm::quat camRot = glm::identity<glm::quat>();
         const float speed = 2.0f;
-        const float rotSpeed = M_PI / 2.0f; //in rads per second
+        const float rotSpeed = glm::pi<float>() / 2.0f; //in rads per second
         
         float dt = g_time->GetDeltaTime() / 1000.0f;
         int fwd = g_input->IsKeyPressed(BAKA_KEYCODE_W) - g_input->IsKeyPressed(BAKA_KEYCODE_S);
@@ -115,6 +118,7 @@ public:
     void OnRender() override
     {
         const glm::vec4 tint = glm::vec4(0.5f, 0.7f, 0.5f, 1.0f);
+        baka::LightsManager &lightsManager = baka::LightsManager::Get();
         glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), modelPos) * glm::toMat4(rot);
 
         defaultShader->Bind();
@@ -133,9 +137,7 @@ public:
             "u_normalMat",
             (void*)glm::value_ptr(  modelMat )
         );
-        dirLight.Bind(defaultShader, "u_dirLight");
-        ambientLight.Bind(defaultShader, "u_ambientLight");
-        pointLight.Bind(defaultShader, "u_pointLight");
+        lightsManager.BindLights(defaultShader);
         mesh->Render();
         defaultShader->Unbind();
 
@@ -162,9 +164,7 @@ public:
             "u_normalMat",
             (void*)glm::value_ptr( modelMat )
         );
-        dirLight.Bind(defaultShader, "u_dirLight");
-        ambientLight.Bind(defaultShader, "u_ambientLight");
-        pointLight.Bind(defaultShader, "u_pointLight");
+        lightsManager.BindLights(defaultShader);
         floor->Render();
         defaultShader->Unbind();
 
