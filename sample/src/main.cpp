@@ -14,6 +14,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <baka_lights.h>
+#include <baka_material.h>
 
 baka::Input *g_input = &baka::Input::Get();
 baka::Time *g_time = nullptr;
@@ -72,6 +73,11 @@ public:
         lights.ActivateLight(&ambientLight);
         lights.ActivateLight(&pointLight);
         lights.ActivateLight(&dirLight);
+
+        baka::Material material = baka::Material(defaultShader);
+        material.SetUniform("u_tint", glm::vec4(0.8f, 0.2f, 0.3f, 1.0f) );
+        auto color = material.GetUniform("u_tint").uVec4;
+        bakalog("%.2f %.2f %.2f %.2f", color.r, color.g, color.b, color.a);
     }
 
     void Update() override
@@ -123,17 +129,17 @@ public:
 
         defaultShader->Bind();
         defaultShader->SetUniform(
-            baka::Shader::Type::MAT4X4,
+            baka::UniformType::UNIFORM_MAT4X4,
             "u_modelViewProj",
             (void*)glm::value_ptr(cam.GetViewProjection() * modelMat)
         );
         defaultShader->SetUniform(
-            baka::Shader::Type::FLOAT4,
+            baka::UniformType::UNIFORM_FLOAT4,
             "u_tint",
             (void*)(glm::value_ptr(tint))
         );
         defaultShader->SetUniform(
-            baka::Shader::Type::MAT4X4,
+            baka::UniformType::UNIFORM_MAT4X4,
             "u_normalMat",
             (void*)glm::value_ptr(  modelMat )
         );
@@ -150,17 +156,17 @@ public:
 
         defaultShader->Bind();
         defaultShader->SetUniform(
-            baka::Shader::Type::MAT4X4,
+            baka::UniformType::UNIFORM_MAT4X4,
             "u_modelViewProj",
             (void*)glm::value_ptr(cam.GetViewProjection() * modelMat)
         );
         defaultShader->SetUniform(
-            baka::Shader::Type::FLOAT4,
+            baka::UniformType::UNIFORM_FLOAT4,
             "u_tint",
             (void*)glm::value_ptr(glm::vec4(1.0f))
         );
         defaultShader->SetUniform(
-            baka::Shader::Type::MAT4X4,
+            baka::UniformType::UNIFORM_MAT4X4,
             "u_normalMat",
             (void*)glm::value_ptr( modelMat )
         );
@@ -172,17 +178,17 @@ public:
 
         defaultShader->Bind();
         defaultShader->SetUniform(
-            baka::Shader::Type::MAT4X4,
+            baka::UniformType::UNIFORM_MAT4X4,
             "u_modelViewProj",
             (void*)glm::value_ptr(cam.GetViewProjection() * modelMat)
         );
         defaultShader->SetUniform(
-            baka::Shader::Type::FLOAT4,
+            baka::UniformType::UNIFORM_FLOAT4,
             "u_tint",
             (void*)glm::value_ptr(pointLight.color)
         );
         defaultShader->SetUniform(
-            baka::Shader::Type::MAT4X4,
+            baka::UniformType::UNIFORM_MAT4X4,
             "u_normalMat",
             (void*)glm::value_ptr( modelMat )
         );
