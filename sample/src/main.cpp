@@ -4,6 +4,7 @@
 
 #include <baka_application.h>
 #include <baka_time.h>
+#include <baka_graphics.h>
 
 #include <baka_camera.h>
 #include <baka_mesh.h>
@@ -65,7 +66,8 @@ public:
         );
 
         pointLight = baka::PointLight(
-            glm::vec3(0.0f, 1.0f, 0.0f)
+            glm::vec3(0.0f, 1.0f, 0.0f),
+            10.0f
         );
 
         floor = baka::Mesh::PrimitiveMesh(baka::Primitive::PLANE);
@@ -92,7 +94,8 @@ public:
         const float speed = 2.0f;
         const float rotSpeed = glm::pi<float>() / 2.0f; //in rads per second
         
-        float dt = g_time->GetDeltaTime() / 1000.0f;
+        float dt_msec = g_time->GetDeltaTime();
+        float dt = dt_msec / 1000.0f;
         int fwd = g_input->IsKeyPressed(BAKA_KEYCODE_W) - g_input->IsKeyPressed(BAKA_KEYCODE_S);
         int side = g_input->IsKeyPressed(BAKA_KEYCODE_D) - g_input->IsKeyPressed(BAKA_KEYCODE_A);
         int vertical = g_input->IsKeyPressed(BAKA_KEYCODE_SPACE) - g_input->IsKeyPressed(BAKA_KEYCODE_LSHIFT);
@@ -124,6 +127,24 @@ public:
             0.0f,
             modelFwd * speed * dt
         );
+
+        baka::Graphics &graphics = baka::Graphics::Get();
+        char newWindowName[BAKA_WINDOW_NAME_MAX_LENGTH] = {0};
+        snprintf(
+            newWindowName, 
+            BAKA_WINDOW_NAME_MAX_LENGTH, 
+            "%s",
+            graphics.GetWindowName());
+        char *fpsStart = strrchr(newWindowName, '(');
+        if(fpsStart) *(fpsStart - 1) = '\0';
+        snprintf(
+            newWindowName,
+            BAKA_WINDOW_NAME_MAX_LENGTH,
+            "%s (%.2f ms)",
+            newWindowName,
+            dt_msec
+        );
+        graphics.SetWindowName(newWindowName);
     }
 
     void OnRender() override
