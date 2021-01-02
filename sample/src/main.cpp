@@ -33,9 +33,11 @@ public:
 
     ~SampleApp()
     {
-        if(mesh) delete mesh;
         if(lightModel) delete lightModel;
         if(floor) delete floor;
+        if(mesh) delete mesh;
+        if(defaultMaterial) delete defaultMaterial;
+        if(bulbMaterial) delete bulbMaterial;
         if(defaultShader) delete defaultShader;
         bakalog("sample app destroyed");
     }
@@ -74,10 +76,13 @@ public:
         lights.ActivateLight(&pointLight);
         lights.ActivateLight(&dirLight);
 
-        baka::Material material = baka::Material(defaultShader);
-        material.SetUniform("u_tint", glm::vec4(0.8f, 0.2f, 0.3f, 1.0f) );
-        auto color = material.GetUniform("u_tint").uVec4;
-        bakalog("%.2f %.2f %.2f %.2f", color.r, color.g, color.b, color.a);
+        this->defaultMaterial = new baka::Material(this->defaultShader);
+        this->defaultMaterial->SetUniform("u_tint", glm::vec4(0.8f, 0.2f, 0.3f, 1.0f));
+        this->defaultMaterial->SetUniform("u_useLights", 1.0f);
+
+        this->bulbMaterial = new baka::Material(this->defaultShader);
+        this->bulbMaterial->SetUniform("u_tint", glm::vec4(pointLight.color, 1.0f));
+        this->bulbMaterial->SetUniform("u_useLights", 0.0f);
     }
 
     void Update() override
@@ -133,11 +138,7 @@ public:
             "u_modelViewProj",
             (void*)glm::value_ptr(cam.GetViewProjection() * modelMat)
         );
-        defaultShader->SetUniform(
-            baka::UniformType::UNIFORM_FLOAT4,
-            "u_tint",
-            (void*)(glm::value_ptr(tint))
-        );
+        defaultMaterial->Bind();
         defaultShader->SetUniform(
             baka::UniformType::UNIFORM_MAT4X4,
             "u_normalMat",
@@ -160,11 +161,7 @@ public:
             "u_modelViewProj",
             (void*)glm::value_ptr(cam.GetViewProjection() * modelMat)
         );
-        defaultShader->SetUniform(
-            baka::UniformType::UNIFORM_FLOAT4,
-            "u_tint",
-            (void*)glm::value_ptr(glm::vec4(1.0f))
-        );
+        defaultMaterial->Bind();
         defaultShader->SetUniform(
             baka::UniformType::UNIFORM_MAT4X4,
             "u_normalMat",
@@ -182,11 +179,7 @@ public:
             "u_modelViewProj",
             (void*)glm::value_ptr(cam.GetViewProjection() * modelMat)
         );
-        defaultShader->SetUniform(
-            baka::UniformType::UNIFORM_FLOAT4,
-            "u_tint",
-            (void*)glm::value_ptr(pointLight.color)
-        );
+        bulbMaterial->Bind();
         defaultShader->SetUniform(
             baka::UniformType::UNIFORM_MAT4X4,
             "u_normalMat",
@@ -200,6 +193,8 @@ private:
     baka::Camera cam;
     baka::Shader *defaultShader;
     baka::Mesh *mesh;
+    baka::Material *defaultMaterial;
+    baka::Material *bulbMaterial;
     glm::quat rot;
 
     baka::Mesh *floor;
