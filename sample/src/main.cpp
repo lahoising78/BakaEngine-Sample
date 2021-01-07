@@ -17,6 +17,15 @@
 #include <baka_lights.h>
 #include <baka_material.h>
 
+// void *operator new(size_t size)
+// {
+//     static std::uint32_t callsToNew = 1;
+//     static size_t totalSize = 0;
+//     totalSize += size;
+//     bakalog("calls to new: %u - total: %u", callsToNew++, totalSize);
+//     return malloc(size);
+// }
+
 baka::Input *g_input = &baka::Input::Get();
 baka::Time *g_time = nullptr;
 class SampleApp : public baka::BakaApplication
